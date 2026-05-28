@@ -20,16 +20,15 @@ import {
   nativeToScVal,
   scValToNative,
   Horizon,
-  Asset,
   BASE_FEE,
 } from "@stellar/stellar-sdk";
 
 // ── Contract Addresses (from .env / deployed testnet) ──
 export const CONTRACT_ADDRESSES = {
   USDC: "CCW67CUUZD4BYLOXPUM6UJCY34UCCIC2CC3V2F",
-  GOVERNANCE_TOKEN: "CCG35K57NAFGZ3EBIHEWLQEAOCNEF72DX3DQNJDJINT66GE5VW7TDTPC",
-  ANCHOR_REGISTRY: "CAWO6A52CISR4JITVFVN4NDDCSJA3MI5N6XCBN5XW2AE4JU3I4NHAUGJ",
-  CORE_VAULT: "CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK",
+  GOVERNANCE_TOKEN: "CD2QZEZGUKJ3HTSJTSUMN6JKGRX5ESMEQ3KPKRIMUNJZJM5KPAYE56AN",
+  ANCHOR_REGISTRY: "CBO4OV4B62OQZBYOGWCGJCHPNA3G3S5WMNAC5IUATBJ3VVWGWMF2UQ4P",
+  CORE_VAULT: "CBSGI73ICTTFSGURP2QZMRXD6KBOZP5GFDNKZYZM5UXC7DK4DEU6YPT6",
 };
 
 // ── Network Config ──
@@ -146,8 +145,6 @@ async function fetchTokenBalance(tokenContractId: string, publicKey: string): Pr
   try {
     const contract = new Contract(tokenContractId);
     const address = new Address(publicKey);
-    
-    const tx = buildReadTx(publicKey);
     const call = contract.call("balance", address.toScVal());
     
     const builtTx = new TransactionBuilder(await sorobanServer.getAccount(publicKey), {
@@ -504,7 +501,7 @@ export async function fetchTransactionHistory(publicKey: string, limit = 20): Pr
 /**
  * Fetch recent Soroban contract events (for live settlement log)
  */
-export async function fetchContractEvents(contractId: string, limit = 15): Promise<any[]> {
+export async function fetchContractEvents(contractId: string, _limit = 15): Promise<any[]> {
   try {
     const latestLedger = await sorobanServer.getLatestLedger();
     const startLedger = Math.max(1, latestLedger.sequence - 17280); // ~24 hours of ledgers
@@ -562,10 +559,6 @@ export async function fundWithFriendbot(publicKey: string): Promise<boolean> {
 // ──────────────────────────────────────────────────
 //  INTERNAL HELPERS
 // ──────────────────────────────────────────────────
-
-function buildReadTx(pubKey: string) {
-  // Utility — not used directly, queries use inline builders
-}
 
 async function queryContract(contractId: string, method: string, callerPubKey: string, args: xdr.ScVal[] = []) {
   const contract = new Contract(contractId);

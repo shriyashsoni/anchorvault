@@ -13,9 +13,7 @@ import {
   Menu,
   CheckCircle2,
   MessageSquare,
-  TrendingUp,
   Clock,
-  Shield,
   Loader2
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -30,11 +28,9 @@ import {
   fetchLPState,
   fetchPendingYield,
   fetchTransactionHistory,
-  fetchContractEvents,
   buildDepositTransaction,
   buildWithdrawTransaction,
   submitTransaction,
-  fundWithFriendbot,
   getStellarExpertTxUrl,
   getStellarExpertAccountUrl,
   getStellarExpertContractUrl,
@@ -178,7 +174,7 @@ export default function App() {
   // ── REAL ON-CHAIN STATE ──
   const [balances, setBalances] = useState<WalletBalances>({ xlm: "0", usdc: "0", vaultToken: "0", lpShares: "0" });
   const [poolState, setPoolState] = useState<PoolState | null>(null);
-  const [lpState, setLpState] = useState<LPState | null>(null);
+  const [_lpState, setLpState] = useState<LPState | null>(null);
   const [pendingYield, setPendingYield] = useState("0");
   const [txHistory, setTxHistory] = useState<TxRecord[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
