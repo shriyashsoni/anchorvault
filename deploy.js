@@ -137,10 +137,14 @@ async function pollForResult(hash) {
 // ─────────────────────────────────────────────────────────
 //  UPDATE .env file with new addresses
 // ─────────────────────────────────────────────────────────
-function updateEnvFile(registryAddress, tokenAddress, vaultAddress) {
+function updateEnvFile(registryAddress, tokenAddress, vaultAddress, usdcAddress) {
   const envPath = path.resolve('.env');
   let content = fs.readFileSync(envPath, 'utf8');
 
+  content = content.replace(
+    /STELLAR_USDC_ADDRESS=.*/,
+    `STELLAR_USDC_ADDRESS="${usdcAddress}"`
+  );
   content = content.replace(
     /VAULT_GOVERNANCE_TOKEN_ADDRESS=.*/,
     `VAULT_GOVERNANCE_TOKEN_ADDRESS="${tokenAddress}"`
@@ -161,12 +165,16 @@ function updateEnvFile(registryAddress, tokenAddress, vaultAddress) {
 // ─────────────────────────────────────────────────────────
 //  UPDATE src/lib/soroban.ts with new addresses
 // ─────────────────────────────────────────────────────────
-function updateSorobanTs(registryAddress, tokenAddress, vaultAddress) {
+function updateSorobanTs(registryAddress, tokenAddress, vaultAddress, usdcAddress) {
   const tsPath = path.resolve('src/lib/soroban.ts');
   if (!fs.existsSync(tsPath)) return;
 
   let content = fs.readFileSync(tsPath, 'utf8');
 
+  content = content.replace(
+    /USDC:\s*"[^"]*"/,
+    `USDC: "${usdcAddress}"`
+  );
   content = content.replace(
     /GOVERNANCE_TOKEN:\s*"[^"]*"/,
     `GOVERNANCE_TOKEN: "${tokenAddress}"`
@@ -190,38 +198,45 @@ function updateSorobanTs(registryAddress, tokenAddress, vaultAddress) {
 async function main() {
   // Unique salts per contract to avoid address collisions
   const SALTS = {
+    usdc:     'dd00000000000000000000000000000000000000000000000000000000000004',
     registry: 'aa00000000000000000000000000000000000000000000000000000000000001',
     token:    'bb00000000000000000000000000000000000000000000000000000000000002',
     vault:    'cc00000000000000000000000000000000000000000000000000000000000003',
   };
 
   const wasmPaths = {
+    usdc:     './target/wasm32v1-none/release/vault_token.wasm',
     registry: './target/wasm32v1-none/release/anchor_registry.wasm',
     token:    './target/wasm32v1-none/release/vault_token.wasm',
     vault:    './target/wasm32v1-none/release/anchor_vault.wasm',
   };
 
-  console.log("=== [1/3] ANCHOR REGISTRY ===");
+  console.log("=== [1/4] STELLAR USDC TOKEN ===");
+  const usdcWasmHash = await uploadWasm(wasmPaths.usdc);
+  const usdcAddress  = await instantiateContract(usdcWasmHash, SALTS.usdc);
+
+  console.log("=== [2/4] ANCHOR REGISTRY ===");
   const registryWasmHash = await uploadWasm(wasmPaths.registry);
   const registryAddress  = await instantiateContract(registryWasmHash, SALTS.registry);
 
-  console.log("=== [2/3] VAULT SHARE TOKEN ===");
+  console.log("=== [3/4] VAULT SHARE TOKEN ===");
   const tokenWasmHash = await uploadWasm(wasmPaths.token);
   const tokenAddress  = await instantiateContract(tokenWasmHash, SALTS.token);
 
-  console.log("=== [3/3] CORRIDOR POOL VAULT ===");
+  console.log("=== [4/4] CORRIDOR POOL VAULT ===");
   const vaultWasmHash = await uploadWasm(wasmPaths.vault);
   const vaultAddress  = await instantiateContract(vaultWasmHash, SALTS.vault);
 
   console.log("=================================================");
   console.log("🎉 ALL CONTRACTS DEPLOYED ON STELLAR TESTNET!");
+  console.log(`   USDC Token:       ${usdcAddress}`);
   console.log(`   Anchor Registry:  ${registryAddress}`);
   console.log(`   Vault Share Token: ${tokenAddress}`);
   console.log(`   Corridor Vault:    ${vaultAddress}`);
   console.log("=================================================\n");
 
-  updateEnvFile(registryAddress, tokenAddress, vaultAddress);
-  updateSorobanTs(registryAddress, tokenAddress, vaultAddress);
+  updateEnvFile(registryAddress, tokenAddress, vaultAddress, usdcAddress);
+  updateSorobanTs(registryAddress, tokenAddress, vaultAddress, usdcAddress);
 
   console.log("\n✅ All done! Run 'npm run initialize' next to set up protocol parameters.");
 }

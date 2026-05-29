@@ -36,10 +36,12 @@ import {
   getStellarExpertContractUrl,
   formatAddress,
   timeAgo,
+  fetchRegisteredAnchors,
   type WalletBalances,
   type PoolState,
   type TxRecord,
   type LPState,
+  type RegisteredAnchor,
 } from "./lib/soroban";
 
 
@@ -179,6 +181,7 @@ export default function App() {
   const [txHistory, setTxHistory] = useState<TxRecord[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [registeredAnchors, setRegisteredAnchors] = useState<RegisteredAnchor[]>([]);
 
   // Transaction form state
   const [depositAmount, setDepositAmount] = useState("");
@@ -194,12 +197,13 @@ export default function App() {
     if (!walletAddress) return;
     setIsLoadingData(true);
     try {
-      const [bal, pool, lp, yield_, history] = await Promise.allSettled([
+      const [bal, pool, lp, yield_, history, anchors] = await Promise.allSettled([
         fetchWalletBalances(walletAddress),
         fetchPoolState(walletAddress),
         fetchLPState(walletAddress),
         fetchPendingYield(walletAddress),
         fetchTransactionHistory(walletAddress, 25),
+        fetchRegisteredAnchors(walletAddress),
       ]);
 
       if (bal.status === "fulfilled") setBalances(bal.value);
@@ -207,6 +211,7 @@ export default function App() {
       if (lp.status === "fulfilled") setLpState(lp.value);
       if (yield_.status === "fulfilled") setPendingYield(yield_.value);
       if (history.status === "fulfilled") setTxHistory(history.value);
+      if (anchors.status === "fulfilled") setRegisteredAnchors(anchors.value);
       setLastRefresh(new Date());
     } catch (err) {
       console.error("[AnchorVault] Data refresh failed:", err);
@@ -1025,44 +1030,53 @@ export default function App() {
 
                       {/* Anchor registry cards */}
                       <div className="flex flex-col gap-4">
-                        {[
-                          { name: "Anchora", corridor: "Euro Corridor (EUR)", reputation: "99.8%", lockedStake: "150,000 USDC", transactions: "42,800", status: "Active" },
-                          { name: "DeltaPay", corridor: "Latam Corridor (BRL)", reputation: "98.9%", lockedStake: "120,000 USDC", transactions: "28,400", status: "Active" },
-                          { name: "ApexRemit", corridor: "APAC Corridor (SGD)", reputation: "99.4%", lockedStake: "140,000 USDC", transactions: "31,200", status: "Active" },
-                          { name: "SkyRemit", corridor: "Africa Corridor (NGN)", reputation: "97.5%", lockedStake: "90,000 USDC", transactions: "19,800", status: "Active" },
-                        ].map((anchor, idx) => (
-                          <div key={idx} className="bg-neutral-900/60 border border-white/5 rounded-xl p-4 flex items-center justify-between font-mono text-xs">
-                            <div className="flex items-center gap-3 w-1/4">
-                              <div className="h-8 w-8 bg-white/5 rounded-full flex items-center justify-center text-white">
-                                {idx + 1}
-                              </div>
-                              <div>
-                                <div className="font-bold text-white font-sans text-sm">{anchor.name}</div>
-                                <div className="text-[10px] text-neutral-500 font-light mt-0.5">{anchor.corridor}</div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex flex-col">
-                              <span className="text-[9px] text-neutral-500">LOCKED STAKE</span>
-                              <span className="text-white mt-0.5 font-bold">{anchor.lockedStake}</span>
-                            </div>
-
-                            <div className="flex flex-col">
-                              <span className="text-[9px] text-neutral-500">REPUTATION SCORE</span>
-                              <span className="text-green-400 mt-0.5 font-bold">{anchor.reputation}</span>
-                            </div>
-
-                            <div className="flex flex-col">
-                              <span className="text-[9px] text-neutral-500">TOTAL SETTLEMENTS</span>
-                              <span className="text-white mt-0.5 font-bold">{anchor.transactions}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1.5">
-                              <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                              <span className="text-green-400 font-bold uppercase tracking-wider text-[10px]">{anchor.status}</span>
-                            </div>
+                        {registeredAnchors.length === 0 ? (
+                          <div className="text-center py-8 text-neutral-500 font-mono text-xs flex items-center justify-center gap-2 bg-neutral-900/20 border border-white/5 rounded-xl">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" />
+                            <span>Fetching on-chain anchor registry states from Stellar Testnet...</span>
                           </div>
-                        ))}
+                        ) : (
+                          registeredAnchors.map((anchor, idx) => (
+                            <div key={idx} className="bg-neutral-900/60 border border-white/5 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between font-mono text-xs gap-3 hover:border-cyan-500/20 transition-all">
+                              <div className="flex items-center gap-3 w-full md:w-[30%]">
+                                <div className="h-8 w-8 bg-white/5 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                                  {idx + 1}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="font-bold text-white font-sans text-sm flex items-center gap-1.5">
+                                    <span>{anchor.name}</span>
+                                    <span className="text-[10px] font-mono text-cyan-400 font-normal opacity-70" title={anchor.address}>
+                                      ({formatAddress(anchor.address, 4)})
+                                    </span>
+                                  </div>
+                                  <div className="text-[10px] text-neutral-500 font-light mt-0.5">{anchor.corridor}</div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex flex-col w-full md:w-[20%]">
+                                <span className="text-[9px] text-neutral-500 uppercase">LOCKED COLLATERAL</span>
+                                <span className="text-white mt-0.5 font-bold font-sans">{parseFloat(anchor.lockedCollateral).toLocaleString()} $VAULT</span>
+                              </div>
+
+                              <div className="flex flex-col w-full md:w-[20%]">
+                                <span className="text-[9px] text-neutral-500 uppercase">REPUTATION SCORE</span>
+                                <span className="text-green-400 mt-0.5 font-bold font-sans">{anchor.reputationScore}</span>
+                              </div>
+
+                              <div className="flex flex-col w-full md:w-[20%]">
+                                <span className="text-[9px] text-neutral-500 uppercase">CREDIT LIMIT</span>
+                                <span className="text-white mt-0.5 font-bold font-sans">{parseFloat(anchor.creditLimit).toLocaleString()} USDC</span>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <span className={`h-2 w-2 rounded-full animate-pulse ${anchor.isWhitelisted ? 'bg-green-500' : 'bg-red-500'}`} />
+                                <span className={`font-bold uppercase tracking-wider text-[10px] ${anchor.isWhitelisted ? 'text-green-400' : 'text-red-400'}`}>
+                                  {anchor.status}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   </div>

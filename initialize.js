@@ -10,6 +10,8 @@ import {
   StrKey
 } from '@stellar/stellar-sdk';
 import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+import * as path from 'path';
 
 dotenv.config();
 
@@ -98,8 +100,17 @@ async function callContract(label, contractId, method, args) {
 //  MAIN
 // ─────────────────────────────────────────────────────────
 async function main() {
-  // 1. Vault Share Token — admin = Vault so it can mint/burn LP shares
-  console.log("=== [1/3] VAULT SHARE TOKEN ===");
+  // 1. Stellar USDC Token — admin = deployer, so they can mint/mint to testers
+  console.log("=== [1/4] STELLAR USDC TOKEN ===");
+  console.log(`    Contract: ${usdcAddress}`);
+  await callContract("USDCToken", usdcAddress, "initialize", [
+    toAddressScVal(deployerKeypair.publicKey()),   // admin
+    xdr.ScVal.scvSymbol("USDC"),                  // name
+    xdr.ScVal.scvSymbol("USDC"),                  // symbol
+  ]);
+
+  // 2. Vault Share Token — admin = Vault so it can mint/burn LP shares
+  console.log("=== [2/4] VAULT SHARE TOKEN ===");
   console.log(`    Contract: ${govTokenAddress}`);
   await callContract("VaultToken", govTokenAddress, "initialize", [
     toAddressScVal(vaultAddress),        // admin = vault contract
@@ -107,8 +118,8 @@ async function main() {
     xdr.ScVal.scvSymbol("AVLT"),         // symbol
   ]);
 
-  // 2. Anchor Registry — admin = deployer, 10% min collateral
-  console.log("=== [2/3] ANCHOR REGISTRY ===");
+  // 3. Anchor Registry — admin = deployer, 10% min collateral
+  console.log("=== [3/4] ANCHOR REGISTRY ===");
   console.log(`    Contract: ${registryAddress}`);
   await callContract("AnchorRegistry", registryAddress, "initialize", [
     toAddressScVal(deployerKeypair.publicKey()),   // admin
@@ -116,8 +127,8 @@ async function main() {
     nativeToScVal(1000, { type: "u32" }),          // 10% min collateral ratio
   ]);
 
-  // 3. Corridor Pool Vault — connect USDC, share token, set fee curve
-  console.log("=== [3/3] CORRIDOR POOL VAULT ===");
+  // 4. Corridor Pool Vault — connect USDC, share token, set fee curve
+  console.log("=== [4/4] CORRIDOR POOL VAULT ===");
   console.log(`    Contract: ${vaultAddress}`);
   await callContract("CorridorVault", vaultAddress, "initialize", [
     toAddressScVal(deployerKeypair.publicKey()),   // admin
@@ -129,13 +140,73 @@ async function main() {
     nativeToScVal(5000, { type: "u32" }),          // 50% slope_2 penalty rate
   ]);
 
+  // 5. Register Anchors in both AnchorRegistry and CorridorVault on-chain!
+  console.log("=== [5/5] REGISTERING ANCHORS ON-CHAIN ===");
+  const anchorsData = [
+    { name: "Anchora", corridor: "Euro Corridor (EUR)", limit: 150000 },
+    { name: "DeltaPay", corridor: "Latam Corridor (BRL)", limit: 120000 },
+    { name: "ApexRemit", corridor: "APAC Corridor (SGD)", limit: 140000 },
+    { name: "SkyRemit", corridor: "Africa Corridor (NGN)", limit: 90000 },
+  ];
+
+  const registeredAnchors = [];
+
+  for (const item of anchorsData) {
+    const kp = Keypair.random();
+    const address = kp.publicKey();
+    const limitScaled = BigInt(item.limit) * 10000000n; // 7 decimals scale for USDC/token credit limits
+
+    console.log(`    Registering anchor: ${item.name} (${address}) with credit limit: ${item.limit} USDC...`);
+    
+    // Register in Registry
+    await callContract(`AnchorRegistry -> Register:${item.name}`, registryAddress, "register_anchor", [
+      toAddressScVal(deployerKeypair.publicKey()), // admin
+      toAddressScVal(address),                     // anchor
+      nativeToScVal(limitScaled, { type: "i128" }), // credit limit
+    ]);
+
+    // Register in CorridorVault
+    await callContract(`CorridorVault -> Register:${item.name}`, vaultAddress, "register_anchor", [
+      toAddressScVal(deployerKeypair.publicKey()), // admin
+      toAddressScVal(address),                     // anchor
+      nativeToScVal(limitScaled, { type: "i128" }), // credit limit
+    ]);
+
+    registeredAnchors.push({
+      name: item.name,
+      corridor: item.corridor,
+      address: address
+    });
+  }
+
+  updateSorobanTsAnchors(registeredAnchors);
+
   console.log("=================================================");
   console.log("🎉 ALL ANCHORVAULT CONTRACTS FULLY INITIALIZED!");
+  console.log(`   USDC Token:        ${usdcAddress}`);
   console.log(`   Vault Share Token: ${govTokenAddress}`);
   console.log(`   Anchor Registry:   ${registryAddress}`);
   console.log(`   Corridor Vault:    ${vaultAddress}`);
+  console.log("   All Anchors registered live on-chain! 🚀");
   console.log("   Protocol is LIVE on Stellar Testnet! 🚀");
   console.log("=================================================");
+}
+
+function updateSorobanTsAnchors(anchors) {
+  const tsPath = path.resolve('src/lib/soroban.ts');
+  if (!fs.existsSync(tsPath)) return;
+
+  let content = fs.readFileSync(tsPath, 'utf8');
+  const anchorsJson = JSON.stringify(anchors, null, 2);
+
+  // Replace the old ANCHOR_LIST
+  content = content.replace(
+    /export const ANCHOR_LIST = \[\s*[\s\S]*?\s*\];/,
+    `export const ANCHOR_LIST = ${anchorsJson};`
+  );
+
+  fs.writeFileSync(tsPath, content, 'utf8');
+  console.log("📝 src/lib/soroban.ts updated with registered on-chain anchors.");
 }
 
 main().catch(err => {
