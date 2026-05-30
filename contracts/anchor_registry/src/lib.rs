@@ -61,16 +61,19 @@ impl AnchorRegistryContract {
         config.admin.require_auth();
         admin.require_auth();
 
-        if env.storage().persistent().has(&StorageKey::Anchor(anchor.clone())) {
-            panic!("Anchor already registered");
-        }
-
-        let record = AnchorRecord {
-            is_whitelisted: true,
-            credit_limit,
-            reputation_score: 800, // Starts at 80% healthy rating
-            locked_collateral: 0,
-            first_registered: env.ledger().timestamp(),
+        let mut record = if env.storage().persistent().has(&StorageKey::Anchor(anchor.clone())) {
+            let mut existing: AnchorRecord = env.storage().persistent().get(&StorageKey::Anchor(anchor.clone())).unwrap();
+            existing.is_whitelisted = true;
+            existing.credit_limit = credit_limit;
+            existing
+        } else {
+            AnchorRecord {
+                is_whitelisted: true,
+                credit_limit,
+                reputation_score: 800, // Starts at 80% healthy rating
+                locked_collateral: 0,
+                first_registered: env.ledger().timestamp(),
+            }
         };
 
         env.storage().persistent().set(&StorageKey::Anchor(anchor), &record);

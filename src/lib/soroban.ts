@@ -47,22 +47,22 @@ export const ANCHOR_LIST = [
   {
     "name": "Anchora",
     "corridor": "Euro Corridor (EUR)",
-    "address": "GDPFCTIK6P3AGERIUGTBFMZRZ727JJFF4KAOP7AXGLMK26JTKOP5C7MV"
+    "address": "GBF4PJKVXGAIDZCYBEGNHAODE4BM3RHIN3EZMS3XHPRHCLPT2JNZPME6"
   },
   {
     "name": "DeltaPay",
     "corridor": "Latam Corridor (BRL)",
-    "address": "GCR2JPES7LCYTIYYHF3CATFGG7TUWRZLOLQYRWF3H4EOF4T2I7WA2UCF"
+    "address": "GBZCRHUOYZJJNB3QSB4W6O4VWKJH36IG57K7FJIUHASR4GVDA56B3WLN"
   },
   {
     "name": "ApexRemit",
     "corridor": "APAC Corridor (SGD)",
-    "address": "GDWORDM55QSTLXTCQJJIAGFK5KFR3645EVWLQWL6SNYZKN2X53JDIFTQ"
+    "address": "GD5LD2APLOZFI4Y5CQEORRYWYYTKXMSXOR3PYQHHW52JIJ5FM7F2DG7N"
   },
   {
     "name": "SkyRemit",
     "corridor": "Africa Corridor (NGN)",
-    "address": "GDHPJPYY5HB2Q75FHHV2I5QRWLZCVUWPMJ7NH4XJDYY2EPJCXZIBFJ4V"
+    "address": "GA2F3RI2ACKQWYWZV4MRYXDATONB5FMDX65GQPGF6IZDU5ZCAW6B6L2Z"
   }
 ];
 
@@ -808,64 +808,92 @@ export async function registerAnchorOnChain(userPubKey: string, creditLimit: str
   const deployerAddress = deployerKeypair.publicKey();
   const creditLimitScaled = BigInt(Math.round(parseFloat(creditLimit) * 1e7)); // 7 decimals
   
-  // 1. Register in AnchorRegistry
-  const registryContract = new Contract(CONTRACT_ADDRESSES.ANCHOR_REGISTRY);
-  const regCall = registryContract.call(
-    "register_anchor",
-    new Address(deployerAddress).toScVal(),
-    new Address(userPubKey).toScVal(),
-    nativeToScVal(creditLimitScaled, { type: "i128" })
-  );
+  // 1. Check if already whitelisted in AnchorRegistry
+  let registryRecord = await fetchAnchorRegistryRecord(deployerAddress, userPubKey);
+  const isWhitelisted = registryRecord?.isWhitelisted ?? false;
   
-  const account = await sorobanServer.getAccount(deployerAddress);
-  const txReg = new TransactionBuilder(account, {
-    fee: "100000",
-    networkPassphrase: NETWORK_PASSPHRASE,
-  })
-    .addOperation(regCall)
-    .setTimeout(300)
-    .build();
+  // 2. Check if already registered in CoreVault
+  const vaultRecord = await fetchAnchorVaultState(deployerAddress, userPubKey);
+  const isRegisteredInVault = vaultRecord?.isRegistered ?? false;
+
+  let lastHash = "";
+
+  if (!isWhitelisted) {
+    // 1. Register in AnchorRegistry
+    const registryContract = new Contract(CONTRACT_ADDRESSES.ANCHOR_REGISTRY);
+    const regCall = registryContract.call(
+      "register_anchor",
+      new Address(deployerAddress).toScVal(),
+      new Address(userPubKey).toScVal(),
+      nativeToScVal(creditLimitScaled, { type: "i128" })
+    );
     
-  const simReg = await sorobanServer.simulateTransaction(txReg);
-  if (!rpc.Api.isSimulationSuccess(simReg)) {
-    throw new Error(rpc.Api.isSimulationError(simReg) ? simReg.error : "Registry registration simulation failed");
+    const account = await sorobanServer.getAccount(deployerAddress);
+    const txReg = new TransactionBuilder(account, {
+      fee: "100000",
+      networkPassphrase: NETWORK_PASSPHRASE,
+    })
+      .addOperation(regCall)
+      .setTimeout(300)
+      .build();
+      
+    const simReg = await sorobanServer.simulateTransaction(txReg);
+    if (!rpc.Api.isSimulationSuccess(simReg)) {
+      throw new Error(rpc.Api.isSimulationError(simReg) ? simReg.error : "Registry registration simulation failed");
+    }
+    
+    const preparedReg = rpc.assembleTransaction(txReg, simReg).build();
+    preparedReg.sign(deployerKeypair);
+    const regResp = await submitTransaction(preparedReg.toXDR());
+    lastHash = regResp.hash;
+  } else {
+    console.log(`[Soroban] Anchor ${userPubKey} is already whitelisted in registry.`);
   }
   
-  const preparedReg = rpc.assembleTransaction(txReg, simReg).build();
-  preparedReg.sign(deployerKeypair);
-  await submitTransaction(preparedReg.toXDR());
-  
-  // 2. Register in CoreVault
-  const vaultContract = new Contract(CONTRACT_ADDRESSES.CORE_VAULT);
-  const vaultCall = vaultContract.call(
-    "register_anchor",
-    new Address(deployerAddress).toScVal(),
-    new Address(userPubKey).toScVal(),
-    nativeToScVal(creditLimitScaled, { type: "i128" })
-  );
-  
-  // Wait slightly to make sure ledger updates sequence
-  await sleep(3000);
-  
-  const account2 = await sorobanServer.getAccount(deployerAddress);
-  const txVault = new TransactionBuilder(account2, {
-    fee: "100000",
-    networkPassphrase: NETWORK_PASSPHRASE,
-  })
-    .addOperation(vaultCall)
-    .setTimeout(300)
-    .build();
+  if (!isRegisteredInVault) {
+    // 2. Register in CoreVault
+    const vaultContract = new Contract(CONTRACT_ADDRESSES.CORE_VAULT);
+    const vaultCall = vaultContract.call(
+      "register_anchor",
+      new Address(deployerAddress).toScVal(),
+      new Address(userPubKey).toScVal(),
+      nativeToScVal(creditLimitScaled, { type: "i128" })
+    );
     
-  const simVault = await sorobanServer.simulateTransaction(txVault);
-  if (!rpc.Api.isSimulationSuccess(simVault)) {
-    throw new Error(rpc.Api.isSimulationError(simVault) ? simVault.error : "Vault registration simulation failed");
+    // Wait slightly to make sure ledger updates sequence if we just registered in registry
+    if (!isWhitelisted) {
+      await sleep(3000);
+    }
+    
+    const account2 = await sorobanServer.getAccount(deployerAddress);
+    const txVault = new TransactionBuilder(account2, {
+      fee: "100000",
+      networkPassphrase: NETWORK_PASSPHRASE,
+    })
+      .addOperation(vaultCall)
+      .setTimeout(300)
+      .build();
+      
+    const simVault = await sorobanServer.simulateTransaction(txVault);
+    if (!rpc.Api.isSimulationSuccess(simVault)) {
+      throw new Error(rpc.Api.isSimulationError(simVault) ? simVault.error : "Vault registration simulation failed");
+    }
+    
+    const preparedVault = rpc.assembleTransaction(txVault, simVault).build();
+    preparedVault.sign(deployerKeypair);
+    const vaultResp = await submitTransaction(preparedVault.toXDR());
+    lastHash = vaultResp.hash;
+  } else {
+    console.log(`[Soroban] Anchor ${userPubKey} is already registered in CoreVault.`);
+  }
+
+  // If both were already registered, adjust the credit limit to the requested one!
+  if (isWhitelisted && isRegisteredInVault) {
+    console.log(`[Soroban] Anchor is already fully registered. Updating credit limit to ${creditLimit}...`);
+    lastHash = await adjustCreditLimitOnChain(userPubKey, creditLimit);
   }
   
-  const preparedVault = rpc.assembleTransaction(txVault, simVault).build();
-  preparedVault.sign(deployerKeypair);
-  const vaultResp = await submitTransaction(preparedVault.toXDR());
-  
-  return vaultResp.hash;
+  return lastHash;
 }
 
 /**

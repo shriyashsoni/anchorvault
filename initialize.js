@@ -69,7 +69,12 @@ async function callContract(label, contractId, method, args) {
   const simResult = await server.simulateTransaction(tx);
   if (!rpc.Api.isSimulationSuccess(simResult)) {
     const errMsg = rpc.Api.isSimulationError(simResult) ? simResult.error : JSON.stringify(simResult);
-    if (errMsg.includes("Already initialized") || errMsg.includes("ExistingValue") || errMsg.includes("already")) {
+    if (
+      errMsg.includes("Already initialized") || 
+      errMsg.includes("ExistingValue") || 
+      errMsg.includes("already") ||
+      (method === "initialize" && (errMsg.includes("InvalidAction") || errMsg.includes("UnreachableCodeReached")))
+    ) {
       console.log(`  ⚠️  Already initialized — skipping.\n`);
       return;
     }

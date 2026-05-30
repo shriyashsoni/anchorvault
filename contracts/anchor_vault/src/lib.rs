@@ -293,12 +293,19 @@ impl AnchorVaultContract {
         // In full impl, check admin signature
         admin.require_auth();
         
-        let anchor_state = AnchorState {
-            is_registered: true,
-            credit_limit,
-            active_draw: 0,
-            reputation_score: 800, // Starts at a healthy 80% default score
-            last_draw_timestamp: 0,
+        let mut anchor_state = if env.storage().persistent().has(&DataKey::Anchor(anchor.clone())) {
+            let mut existing: AnchorState = env.storage().persistent().get(&DataKey::Anchor(anchor.clone())).unwrap();
+            existing.is_registered = true;
+            existing.credit_limit = credit_limit;
+            existing
+        } else {
+            AnchorState {
+                is_registered: true,
+                credit_limit,
+                active_draw: 0,
+                reputation_score: 800, // Starts at a healthy 80% default score
+                last_draw_timestamp: 0,
+            }
         };
         
         env.storage().persistent().set(&DataKey::Anchor(anchor), &anchor_state);
