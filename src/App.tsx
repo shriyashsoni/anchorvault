@@ -259,23 +259,59 @@ export default function App() {
           to: subscrEmail,
           subject: "Welcome to AnchorVault! 🚀",
           html: `
-            <div style="font-family: 'Inter', sans-serif; background-color: #03001e; color: #ffffff; padding: 40px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 1px solid rgba(123, 57, 252, 0.3);">
-              <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold; background: linear-gradient(to right, #7b39fc, #00e5ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AnchorVault</h1>
-                <p style="color: #8b8ea8; font-size: 14px; margin-top: 5px;">Soroban Remittance Liquidity Protocol</p>
-              </div>
-              <div style="background-color: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                <h2 style="color: #00e5ff; margin-top: 0; font-size: 20px;">Subscription Confirmed! 🎉</h2>
-                <p style="font-size: 16px; line-height: 1.6; color: #d4d4d8;">Hi there,</p>
-                <p style="font-size: 16px; line-height: 1.6; color: #d4d4d8;">Thank you for subscribing to the AnchorVault newsletter. You're now whitelisted to receive exclusive updates, technical whitepapers, and core smart contract releases direct from the Stellar Soroban ecosystem.</p>
-                <p style="font-size: 16px; line-height: 1.6; color: #d4d4d8;">Whether you are a Liquidity Provider earning dynamic stablecoin yield or an off-ramp Anchor drawing settlement credit, you are paving the way for trustless international payment infrastructure.</p>
-                <div style="margin: 30px 0; text-align: center;">
-                  <a href="https://github.com/shriyashsoni/anchorvault" style="background-color: #7b39fc; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block;">Explore on GitHub</a>
+            <div style="font-family: 'Inter', sans-serif; background-color: #08080a; color: #ffffff; padding: 40px 20px; max-width: 600px; margin: 0 auto;">
+              <div style="background-color: #0c0c0e; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                <!-- Brand Header -->
+                <div style="padding: 40px 40px 20px 40px; text-align: center;">
+                  <div style="display: inline-block; padding: 12px; background: rgba(123, 57, 252, 0.1); border: 1px solid rgba(123, 57, 252, 0.2); border-radius: 16px; margin-bottom: 16px;">
+                    <img style="width: 48px; height: 48px; vertical-align: middle;" src="https://anchorvault.co/logo.png" alt="AnchorVault Logo" onerror="this.src='https://stellar.org/images/stellar-logo.png'">
+                  </div>
+                  <h1 style="font-size: 24px; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; margin: 0; color: #ffffff;">AnchorVault</h1>
+                  <div style="font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #7b39fc; margin-top: 4px;">Soroban Corridors Protocol</div>
                 </div>
-              </div>
-              <div style="text-align: center; margin-top: 30px; color: #71717a; font-size: 12px;">
-                <p>© 2026 AnchorVault. Powered by Stellar Soroban.</p>
-                <p>Curated by @shriyashsoni</p>
+                
+                <!-- Content Body -->
+                <div style="padding: 0 40px 40px 40px;">
+                  <div style="background: linear-gradient(135deg, rgba(123, 57, 252, 0.15) 0%, rgba(0, 229, 255, 0.05) 100%); border: 1px solid rgba(123, 57, 252, 0.2); border-radius: 16px; padding: 24px; margin-bottom: 30px; text-align: center;">
+                    <h2 style="font-size: 22px; font-weight: 700; color: #00e5ff; margin: 0 0 8px 0;">Subscription Confirmed! 🎉</h2>
+                    <p style="font-size: 14px; line-height: 1.6; color: #d4d4d8; margin: 0;">
+                      Thank you for subscribing to AnchorVault. You are now whitelisted to receive priority access to our upcoming Stellar Soroban mainnet features, technical updates, and smart contract releases.
+                    </p>
+                  </div>
+                  
+                  <div style="font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #71717a; margin-bottom: 16px;">What is AnchorVault?</div>
+                  
+                  <div style="padding: 16px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; margin-bottom: 12px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #ffffff; margin: 0 0 4px 0;">USDC Corridor Liquidity Pools</h3>
+                    <p style="font-size: 13px; line-height: 1.5; color: #a1a1aa; margin: 0;">
+                      Deposit stablecoins into secure, single-sided liquidity pools to back high-utilization cross-border payment corridors and earn organic yield in real-time.
+                    </p>
+                  </div>
+                  
+                  <div style="padding: 16px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; margin-bottom: 12px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #ffffff; margin: 0 0 4px 0;">Stellar Anchor Registry</h3>
+                    <p style="font-size: 13px; line-height: 1.5; color: #a1a1aa; margin: 0;">
+                      Remittance off-ramp anchors lock governance tokens to securely claim instant liquidity credits and scale their transaction capacities.
+                    </p>
+                  </div>
+                  
+                  <div style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
+                    <a style="display: inline-block; background-color: #7b39fc; color: #ffffff !important; font-size: 14px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 30px; box-shadow: 0 10px 20px rgba(123, 57, 252, 0.3);" href="https://anchorvault.co" target="_blank">Launch DeFi Portal</a>
+                  </div>
+                </div>
+                
+                <!-- Footer -->
+                <div style="padding: 30px 40px; background-color: #070709; border-top: 1px solid rgba(255, 255, 255, 0.03); text-align: center;">
+                  <p style="font-size: 12px; line-height: 1.6; color: #52525b; margin: 0 0 16px 0;">
+                    CURATED BY @SHRIYASHSONI | POWERED BY STELLAR WEB3.<br>
+                    You are receiving this because you signed up on the AnchorVault portal. If you wish to unsubscribe, you can do so anytime using the link below.
+                  </p>
+                  <div style="margin-top: 10px;">
+                    <a style="display: inline-block; margin: 0 8px; color: #71717a; text-decoration: none; font-size: 12px; font-weight: 600;" href="https://github.com/shriyashsoni/anchorvault" target="_blank">GitHub</a>
+                    <a style="display: inline-block; margin: 0 8px; color: #71717a; text-decoration: none; font-size: 12px; font-weight: 600;" href="https://x.com" target="_blank">Twitter</a>
+                    <a style="display: inline-block; margin: 0 8px; color: #ef4444; text-decoration: none; font-size: 12px; font-weight: 600;" href="#">Unsubscribe</a>
+                  </div>
+                </div>
               </div>
             </div>
           `
