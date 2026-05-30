@@ -1038,3 +1038,71 @@ export async function offsetDefaultedDebtOnChain(anchorAddress: string): Promise
   const result = await submitTransaction(preparedTx.toXDR());
   return result.hash;
 }
+
+/**
+ * Update the credit limit of an already whitelisted Anchor.
+ * Signs with the Deployer Key on both the Registry and Core Vault.
+ */
+export async function adjustCreditLimitOnChain(userPubKey: string, newLimit: string): Promise<string> {
+  const deployerKeypair = Keypair.fromSecret(DEPLOYER_SECRET);
+  const deployerAddress = deployerKeypair.publicKey();
+  const limitScaled = BigInt(Math.round(parseFloat(newLimit) * 1e7)); // 7 decimals
+  
+  // 1. Adjust in AnchorRegistry
+  const registryContract = new Contract(CONTRACT_ADDRESSES.ANCHOR_REGISTRY);
+  const regCall = registryContract.call(
+    "adjust_credit_limit",
+    new Address(deployerAddress).toScVal(),
+    new Address(userPubKey).toScVal(),
+    nativeToScVal(limitScaled, { type: "i128" })
+  );
+  
+  const account = await sorobanServer.getAccount(deployerAddress);
+  const txReg = new TransactionBuilder(account, {
+    fee: "100000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(regCall)
+    .setTimeout(300)
+    .build();
+    
+  const simReg = await sorobanServer.simulateTransaction(txReg);
+  if (!rpc.Api.isSimulationSuccess(simReg)) {
+    throw new Error(rpc.Api.isSimulationError(simReg) ? simReg.error : "Registry limit adjustment simulation failed");
+  }
+  
+  const preparedReg = rpc.assembleTransaction(txReg, simReg).build();
+  preparedReg.sign(deployerKeypair);
+  await submitTransaction(preparedReg.toXDR());
+  
+  // 2. Adjust in CoreVault
+  const vaultContract = new Contract(CONTRACT_ADDRESSES.CORE_VAULT);
+  const vaultCall = vaultContract.call(
+    "adjust_credit_limit",
+    new Address(deployerAddress).toScVal(),
+    new Address(userPubKey).toScVal(),
+    nativeToScVal(limitScaled, { type: "i128" })
+  );
+  
+  await sleep(3000); // Sequence grace
+  
+  const account2 = await sorobanServer.getAccount(deployerAddress);
+  const txVault = new TransactionBuilder(account2, {
+    fee: "100000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(vaultCall)
+    .setTimeout(300)
+    .build();
+    
+  const simVault = await sorobanServer.simulateTransaction(txVault);
+  if (!rpc.Api.isSimulationSuccess(simVault)) {
+    throw new Error(rpc.Api.isSimulationError(simVault) ? simVault.error : "Vault limit adjustment simulation failed");
+  }
+  
+  const preparedVault = rpc.assembleTransaction(txVault, simVault).build();
+  preparedVault.sign(deployerKeypair);
+  const vaultResp = await submitTransaction(preparedVault.toXDR());
+  
+  return vaultResp.hash;
+}

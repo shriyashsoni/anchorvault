@@ -48,6 +48,7 @@ import {
   formatTokenAmount,
   fundWithFriendbot,
   offsetDefaultedDebtOnChain,
+  adjustCreditLimitOnChain,
   type WalletBalances,
   type PoolState,
   type TxRecord,
@@ -619,7 +620,7 @@ export default function App() {
           `> [AI Copilot] Calling Registry::adjust_credit_limit(${formatAddress(walletAddress, 6)}, ${newLimit} USDC) via deployer authority...`,
         ]);
 
-        const hash = await registerAnchorOnChain(walletAddress, newLimit);
+        const hash = await adjustCreditLimitOnChain(walletAddress, newLimit);
         setAiTerminalLogs(prev => [
           ...prev,
           `> [AI Copilot] SUCCESS: Dynamic credit limit updated to ${newLimit} USDC on-chain!`,
@@ -1690,9 +1691,22 @@ export default function App() {
                         </div>
 
                         {txStep !== "idle" && (
-                          <div className="text-xs text-neutral-400 font-mono bg-neutral-900/30 p-3 rounded-xl border border-white/5">
-                            Status: <span className="text-[#FA8453] font-semibold">{txStep}</span>
-                            {txHash && <a href={getStellarExpertTxUrl(txHash)} target="_blank" rel="noreferrer" className="ml-2 text-cyan-400 hover:underline">View TX ↗</a>}
+                          <div className="text-xs text-neutral-400 font-mono bg-neutral-900/30 p-4 rounded-xl border border-white/5 flex flex-col gap-1.5 animate-fade-in">
+                            <div className="flex items-center justify-between">
+                              <span>
+                                Status: <span className={`font-semibold ${txStep === "error" ? "text-red-400 font-bold" : "text-[#FA8453]"}`}>{txStep.toUpperCase()}</span>
+                              </span>
+                              {txHash && (
+                                <a href={getStellarExpertTxUrl(txHash)} target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline flex items-center gap-1">
+                                  View TX ↗
+                                </a>
+                              )}
+                            </div>
+                            {txStep === "error" && txError && (
+                              <div className="text-red-400 font-sans mt-1 text-[11px] leading-relaxed border-t border-red-500/10 pt-1.5">
+                                ⚠️ <strong>Execution Failed:</strong> {txError}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

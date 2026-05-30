@@ -180,6 +180,22 @@ impl AnchorRegistryContract {
         env.storage().persistent().set(&StorageKey::Anchor(anchor), &record);
     }
 
+    /// Update anchor credit limit (Governance/Risk Management)
+    pub fn adjust_credit_limit(env: Env, admin: Address, anchor: Address, new_limit: i128) {
+        let config: RegistryConfig = env.storage().instance().get(&StorageKey::Config).unwrap();
+        config.admin.require_auth();
+        admin.require_auth();
+
+        let mut record: AnchorRecord = env
+            .storage()
+            .persistent()
+            .get(&StorageKey::Anchor(anchor.clone()))
+            .expect("Anchor not registered");
+
+        record.credit_limit = new_limit;
+        env.storage().persistent().set(&StorageKey::Anchor(anchor), &record);
+    }
+
     // --- Viewers ---
 
     pub fn get_anchor(env: Env, anchor: Address) -> AnchorRecord {
