@@ -153,7 +153,7 @@ export default function App() {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-          "Authorization": "Bearer re_DrvG6uiz_6gjmoDf9CZFwk7ShTPnvmeJc",
+          "Authorization": `Bearer ${import.meta.env.VITE_RESEND_API_KEY || "re_DrvG6uiz_6gjmoDf9CZFwk7ShTPnvmeJc"}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
