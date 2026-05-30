@@ -76,19 +76,7 @@ const GithubIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   </svg>
 );
 
-const LinkedinIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" className={className} fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-  </svg>
-);
 
-const InstagramIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-  </svg>
-);
 
 const SUPPORTED_WALLETS = [
   {
@@ -228,7 +216,7 @@ function InfiniteSlider() {
 
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<"home" | "whitepaper" | "docs" | "privacy" | "terms" | "staking">("home");
+  const [currentView, setCurrentView] = useState<"home" | "whitepaper" | "docs" | "privacy" | "terms">("home");
   const [docsTab, setDocsTab] = useState("getting-started");
 
   // Newsletter Subscription states
@@ -1014,7 +1002,6 @@ export default function App() {
             <button onClick={() => setCurrentView("home")} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Overview</button>
             <button onClick={() => setCurrentView("whitepaper")} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Whitepaper</button>
             <button onClick={() => { setCurrentView("docs"); setDocsTab("getting-started"); }} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Docs</button>
-            <button onClick={() => setCurrentView("staking")} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Staking</button>
             <button onClick={() => { setCurrentView("docs"); setDocsTab("smart-contracts"); }} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Contracts</button>
           </div>
 
@@ -1059,7 +1046,6 @@ export default function App() {
             <button onClick={() => { setMobileMenuOpen(false); setCurrentView("home"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Overview</button>
             <button onClick={() => { setMobileMenuOpen(false); setCurrentView("whitepaper"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Whitepaper</button>
             <button onClick={() => { setMobileMenuOpen(false); setCurrentView("docs"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Docs</button>
-            <button onClick={() => { setMobileMenuOpen(false); setCurrentView("staking"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Staking</button>
             <button onClick={() => { setMobileMenuOpen(false); setCurrentView("home"); setTimeout(() => document.getElementById("contracts")?.scrollIntoView({ behavior: 'smooth' }), 150); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Contracts</button>
             
             <div className="flex flex-col gap-4 w-full max-w-xs mt-8">
@@ -1235,13 +1221,7 @@ export default function App() {
       {currentView === "docs" && <DocsView activeTab={docsTab} setActiveTab={setDocsTab} />}
       {currentView === "privacy" && <PrivacyView />}
       {currentView === "terms" && <TermsView />}
-      {currentView === "staking" && (
-        <StakingView 
-          walletConnected={walletConnected} 
-          handleConnectWallet={handleConnectWallet} 
-          enterPortalWithTab={(tab) => { setShowDashboard(true); setDashboardTab(tab); }} 
-        />
-      )}
+
 
       {/* GORGEOUS LIQUID "START YOUR JOURNEY" NEWSLETTER CTA SECTION */}
       <section className="w-full max-w-[1320px] mx-auto px-6 mt-32 relative z-10">
@@ -1357,44 +1337,41 @@ export default function App() {
                 <span className="text-white text-xl font-bold tracking-tight uppercase">AnchorVault</span>
               </div>
               <p className="text-neutral-400 text-sm font-light leading-relaxed max-w-sm font-sans">
-                AnchorVault provides premium liquidity routing, automated remittance corridors, and dynamic on-chain yield across the Stellar Soroban ecosystem - shared with all builders for free.
+                AnchorVault provides premium liquidity routing, automated remittance corridors, and dynamic on-chain yield across the Stellar Soroban ecosystem.
               </p>
             </div>
 
             {/* Links Columns */}
-            <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8">
               
               {/* Column 1: Discover */}
               <div className="flex flex-col gap-4">
                 <span className="text-[13px] font-bold tracking-wider text-white uppercase font-sans">Discover</span>
                 <div className="flex flex-col gap-2 font-sans text-sm">
                   <button onClick={() => { setCurrentView("home"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Overview</button>
-                  <button onClick={() => setCurrentView("whitepaper")} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Whitepaper</button>
-                  <button onClick={() => { setCurrentView("docs"); setDocsTab("getting-started"); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Documentation</button>
-                  <button onClick={() => { setCurrentView("docs"); setDocsTab("smart-contracts"); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Smart Contracts</button>
-                  <button onClick={() => { setCurrentView("docs"); setDocsTab("accuracy-math"); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Audit Reports</button>
+                  <button onClick={() => { setCurrentView("whitepaper"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Whitepaper</button>
+                  <button onClick={() => { setCurrentView("docs"); setDocsTab("getting-started"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Documentation</button>
                 </div>
               </div>
 
-              {/* Column 2: Community */}
+              {/* Column 2: Legal & Audit */}
               <div className="flex flex-col gap-4">
-                <span className="text-[13px] font-bold tracking-wider text-white uppercase font-sans">Community</span>
+                <span className="text-[13px] font-bold tracking-wider text-white uppercase font-sans">Security & Legal</span>
                 <div className="flex flex-col gap-2 font-sans text-sm">
-                  <a href="https://discord.gg/anchorvault" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Discord Server</a>
-                  <a href="https://t.me/Anchor_Vault" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Telegram Group</a>
-                  <a href="https://medium.com/@anchorvault" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Medium Publication</a>
-                  <a href="https://stellar.org" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Stellar Ecosystem</a>
+                  <button onClick={() => { setCurrentView("docs"); setDocsTab("smart-contracts"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Smart Contracts</button>
+                  <button onClick={() => { setCurrentView("docs"); setDocsTab("accuracy-math"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Audit Reports</button>
+                  <button onClick={() => { setCurrentView("privacy"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Privacy Policy</button>
+                  <button onClick={() => { setCurrentView("terms"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Terms of Use</button>
                 </div>
               </div>
 
-              {/* Column 3: Concierge */}
+              {/* Column 3: Contact */}
               <div className="flex flex-col gap-4">
-                <span className="text-[13px] font-bold tracking-wider text-white uppercase font-sans">Concierge</span>
+                <span className="text-[13px] font-bold tracking-wider text-white uppercase font-sans">Contact</span>
                 <div className="flex flex-col gap-2 font-sans text-sm">
-                  <a href="mailto:support@anchorvault.co" className="text-neutral-400 hover:text-white transition-colors duration-200">Get in Touch</a>
-                  <button onClick={() => setCurrentView("privacy")} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Legal Privacy</button>
-                  <button onClick={() => setCurrentView("terms")} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">User Agreement</button>
-                  <a href="https://developers.stellar.org/" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Developer Portal</a>
+                  <a href="mailto:support@anchorvault.co" className="text-neutral-400 hover:text-white transition-colors duration-200">support@anchorvault.co</a>
+                  <a href="https://github.com/shriyashsoni/anchorvault" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Official GitHub</a>
+                  <a href="https://x.com/Anchor_Vault" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Official X (Twitter)</a>
                 </div>
               </div>
 
@@ -1409,36 +1386,25 @@ export default function App() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
             {/* Copyright */}
             <div className="text-xs text-neutral-500 font-sans tracking-wide">
-              CURATED BY @SHRIYASHSONI &nbsp;|&nbsp; © 2026 ANCHORVAULT. POWERED BY WEB3.
+              CURATED BY @SHRIYASHSONI &nbsp;|&nbsp; © 2026 ANCHORVAULT. ALL RIGHTS RESERVED.
             </div>
 
-            {/* Language and socials */}
-            <div className="flex items-center gap-6">
-              {/* Globe language dropdown mimic */}
-              <div className="bg-white/5 border border-white/10 rounded-full px-4 py-1.5 flex items-center gap-2 text-xs font-semibold text-neutral-300 font-sans cursor-pointer hover:border-white/20 transition-all">
-                <Globe className="h-3.5 w-3.5" />
-                <span>GB / EN</span>
-              </div>
-
-              {/* Social icons */}
-              <div className="flex items-center gap-3">
-                {[
-                  { icon: GithubIcon, href: "https://github.com/shriyashsoni/anchorvault" },
-                  { icon: TwitterIcon, href: "https://x.com/Anchor_Vault" },
-                  { icon: LinkedinIcon, href: "https://linkedin.com" },
-                  { icon: InstagramIcon, href: "https://instagram.com" }
-                ].map((social, i) => (
-                  <a
-                    key={i}
-                    href={social.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="h-8 w-8 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
-                  >
-                    <social.icon className="h-4 w-4" />
-                  </a>
-                ))}
-              </div>
+            {/* Social icons */}
+            <div className="flex items-center gap-3">
+              {[
+                { icon: GithubIcon, href: "https://github.com/shriyashsoni/anchorvault" },
+                { icon: TwitterIcon, href: "https://x.com/Anchor_Vault" }
+              ].map((social, i) => (
+                <a
+                  key={i}
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="h-8 w-8 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
+                >
+                  <social.icon className="h-4 w-4" />
+                </a>
+              ))}
             </div>
           </div>
 
@@ -3205,153 +3171,4 @@ function TermsView() {
   );
 }
 
-// ===================================================================
-//             PREMIUM INTERACTIVE STAKING VIEW COMPONENT
-// ===================================================================
 
-function StakingView({ 
-  walletConnected, 
-  handleConnectWallet, 
-  enterPortalWithTab 
-}: { 
-  walletConnected: boolean; 
-  handleConnectWallet: () => void; 
-  enterPortalWithTab: (tab: "deposit" | "registry") => void; 
-}) {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      className="w-full max-w-[1320px] mx-auto px-6 pt-28 lg:pt-36 min-h-screen text-white font-sans font-manrope"
-    >
-      {/* Page Header */}
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <span className="bg-[#7b39fc]/20 text-[#ab72ff] text-xs font-semibold px-4 py-1.5 rounded-full uppercase tracking-wider border border-[#7b39fc]/30 inline-block mb-4">
-          AnchorVault Collateralization
-        </span>
-        <h1 className="font-instrument text-5xl md:text-7xl leading-tight tracking-tight mb-6">
-          AnchorVault On-Chain Staking
-        </h1>
-        <p className="text-neutral-400 text-lg leading-relaxed font-sans">
-          Secure the Stellar corridor pools, boost payment anchor limits, and earn organic settlement fees backed by audited smart contracts.
-        </p>
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
-        {[
-          { label: "Total Value Locked", val: "$12,482,910 USDC", sub: "+12.4% this month", color: "text-[#00e5ff]" },
-          { label: "Staked Governance", val: "5,810,400 VAULT", sub: "23.4% of total supply", color: "text-[#ab72ff]" },
-          { label: "Average Staking APR", val: "18.42% APR", sub: "Fees routed in real-time", color: "text-green-400" },
-          { label: "Active Stakers", val: "1,248 LPs & Anchors", sub: "On-chain & verified", color: "text-purple-400" }
-        ].map((stat, idx) => (
-          <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden group hover:border-[#7b39fc]/50 transition-colors">
-            <div className="absolute top-0 right-0 h-24 w-24 rounded-full bg-[#7b39fc]/5 blur-2xl group-hover:bg-[#7b39fc]/10 transition-all pointer-events-none" />
-            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block mb-2">{stat.label}</span>
-            <div className={`text-2xl lg:text-3xl font-bold tracking-tight mb-1 font-sans ${stat.color}`}>{stat.val}</div>
-            <span className="text-xs text-neutral-500">{stat.sub}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Main Staking Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-        
-        {/* Card 1: LP Staking */}
-        <div className="bg-[#1e103c]/30 border border-[#7b39fc]/30 rounded-3xl p-8 backdrop-blur-lg flex flex-col justify-between relative overflow-hidden group hover:border-[#7b39fc]/60 transition-all shadow-xl shadow-[#7b39fc]/5 min-h-[460px]">
-          <div className="absolute -top-32 -left-32 h-64 w-64 rounded-full bg-[#7b39fc]/10 blur-[80px] pointer-events-none group-hover:bg-[#7b39fc]/15 transition-all" />
-          
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <span className="bg-[#00f2fe]/10 text-[#00f2fe] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-[#00f2fe]/20">Liquidity Provider</span>
-              <span className="text-green-400 text-xs font-semibold">12.0% - 24.5% APR</span>
-            </div>
-            
-            <h2 className="font-instrument text-4xl mb-4 leading-tight">USDC Corridor Staking</h2>
-            <p className="text-neutral-400 text-sm leading-relaxed mb-6 font-sans">
-              Provide USDC stablecoin liquidity to secure high-utilization remittance corridors. In exchange for securing the pool, LPs are minted **$AVLT** share tokens that accrue 90% of dynamic transaction settlement fees directly on-chain.
-            </p>
-            
-            <div className="flex flex-col gap-3 mb-8 font-sans">
-              {[
-                "Mint AVLT dynamic yield share tokens",
-                "Fees distributed directly to your wallet per-block",
-                "Fast withdraws with no locking penalty",
-                "Zero risk of impermanent loss (single-sided stablecoin)"
-              ].map((benefit, i) => (
-                <div key={i} className="flex items-center gap-2.5 text-xs text-neutral-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#00f2fe] shrink-0" />
-                  <span>{benefit}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <button 
-            onClick={walletConnected ? () => enterPortalWithTab("deposit") : handleConnectWallet}
-            className="w-full bg-[#7b39fc] hover:bg-[#8b4eff] text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-[#7b39fc]/20 font-sans cursor-pointer text-center"
-          >
-            {walletConnected ? "Open USDC Staking Vault" : "Connect Wallet to Stake"}
-          </button>
-        </div>
-
-        {/* Card 2: Anchor Collateral Lockup */}
-        <div className="bg-[#0e2439]/30 border border-[#00e5ff]/20 rounded-3xl p-8 backdrop-blur-lg flex flex-col justify-between relative overflow-hidden group hover:border-[#00e5ff]/50 transition-all shadow-xl shadow-[#00e5ff]/5 min-h-[460px]">
-          <div className="absolute -top-32 -right-32 h-64 w-64 rounded-full bg-[#00e5ff]/10 blur-[80px] pointer-events-none group-hover:bg-[#00e5ff]/15 transition-all" />
-          
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <span className="bg-[#ab72ff]/10 text-[#ab72ff] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-[#ab72ff]/20">Remittance Anchor</span>
-              <span className="text-cyan-400 text-xs font-semibold">Reputation Multiplier</span>
-            </div>
-            
-            <h2 className="font-instrument text-4xl mb-4 leading-tight">Anchor Governance Staking</h2>
-            <p className="text-neutral-400 text-sm leading-relaxed mb-6 font-sans">
-              Off-ramp anchors lock governance **$VAULT** tokens into the registry. Staked tokens act as a trustless credit collateral backing, allowing authorized anchors to draw instant USDC liquidity to settle international remittances.
-            </p>
-            
-            <div className="flex flex-col gap-3 mb-8 font-sans">
-              {[
-                "10% minimum collateral-to-credit ratio backing",
-                "Staking boosts reputation index up to 1000",
-                "Expand active USDC remittance credit limits",
-                "Guaranteed yield protection mechanism"
-              ].map((benefit, i) => (
-                <div key={i} className="flex items-center gap-2.5 text-xs text-neutral-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#ab72ff] shrink-0" />
-                  <span>{benefit}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <button 
-            onClick={walletConnected ? () => enterPortalWithTab("registry") : handleConnectWallet}
-            className="w-full bg-white hover:bg-neutral-100 text-black font-semibold py-3.5 rounded-xl transition-all shadow-lg font-sans cursor-pointer text-center"
-          >
-            {walletConnected ? "Stake VAULT in Anchor Registry" : "Connect Wallet to Lock"}
-          </button>
-        </div>
-
-      </div>
-
-      {/* Dynamic Staking FAQ */}
-      <div className="max-w-4xl mx-auto mb-16 font-sans">
-        <h3 className="font-instrument text-center text-3xl mb-8">Frequently Asked Staking Questions</h3>
-        <div className="flex flex-col gap-4">
-          {[
-            { q: "Is there a lockup period for stablecoin LPs?", a: "No, USDC corridor pool staking is fully liquid. You can withdraw your assets at any time. When utilization rates are exceptionally high (e.g. above 80%), withdrawals may experience temporary delay queues to protect outstanding remittance settlements, but your yield accrues without pause." },
-            { q: "How is yield generated dynamically?", a: "When authorized payment anchors draw USDC liquidity to settle instant off-ramp transfers globally, they repay the principal amount plus a dynamically computed interest fee. 90% of these settlement fees are directed straight back into the Corridor Vault pool, driving organic yield for all stakers." },
-            { q: "What is the difference between $VAULT and $AVLT?", a: "$VAULT is the governance token of the protocol, staked by anchors to back credit lines in the Anchor Registry. $AVLT represents your dynamic share token of the Corridor Vault pool, minted when you stake USDC." }
-          ].map((faq, idx) => (
-            <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
-              <h4 className="text-[16px] font-semibold text-white mb-2">{faq.q}</h4>
-              <p className="text-sm text-neutral-400 leading-relaxed">{faq.a}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
