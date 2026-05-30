@@ -18,6 +18,7 @@ import {
   Mail
 } from "lucide-react";
 import { motion } from "motion/react";
+import Hls from "hls.js";
 import { StellarWalletsKit, Networks } from "@creit.tech/stellar-wallets-kit";
 import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
 import BionovaHero from "./components/BionovaHero";
@@ -127,6 +128,103 @@ const SUPPORTED_WALLETS = [
     icon: "https://stellar.creit.tech/wallet-icons/rabet.png",
   },
 ];
+
+// ===================================================================
+//             HLS & STREAMING VIDEO COMPONENT
+// ===================================================================
+
+function HlsVideo({ src, fallbackSrc, className }: { src: string; fallbackSrc: string; className?: string }) {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    let hls: Hls | null = null;
+
+    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      // Native HLS support (Safari, iOS)
+      video.src = src;
+    } else if (Hls.isSupported()) {
+      // Hls.js support
+      hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+      });
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      
+      hls.on(Hls.Events.ERROR, function (_event, data) {
+        if (data.fatal) {
+          console.warn("HLS.js fatal error encountered, falling back to MP4:", data);
+          video.src = fallbackSrc;
+          video.play().catch(e => console.log("Fallback play failed:", e));
+        }
+      });
+    } else {
+      // Fallback
+      video.src = fallbackSrc;
+    }
+
+    return () => {
+      if (hls) {
+        hls.destroy();
+      }
+    };
+  }, [src, fallbackSrc]);
+
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      loop
+      muted
+      playsInline
+      className={className}
+    />
+  );
+}
+
+// ===================================================================
+//             ANIMATED INFINITE PARTNER LOGO SLIDER
+// ===================================================================
+
+const PARTNER_LOGOS = [
+  { name: "Stellar Network", logo: "/logo.png" },
+  { name: "Soroban Smart Contracts", logo: "/logo.png" },
+  { name: "Circle USDC", logo: "/logo.png" },
+  { name: "Apna Coding", logo: "/logo.png" },
+  { name: "Freighter Wallet", logo: "/logo.png" },
+  { name: "Creit Tech", logo: "/logo.png" }
+];
+
+function InfiniteSlider() {
+  const doubleLogos = [...PARTNER_LOGOS, ...PARTNER_LOGOS, ...PARTNER_LOGOS];
+
+  return (
+    <div className="w-full overflow-hidden relative">
+      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black/20 to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black/20 to-transparent z-10 pointer-events-none" />
+
+      <motion.div
+        className="flex items-center gap-12 whitespace-nowrap min-w-max py-2"
+        animate={{ x: [0, -600] }}
+        transition={{
+          repeat: Infinity,
+          ease: "linear",
+          duration: 20,
+        }}
+      >
+        {doubleLogos.map((item, idx) => (
+          <div key={idx} className="flex items-center gap-2.5 shrink-0 opacity-40 hover:opacity-85 transition-opacity duration-300 select-none cursor-default">
+            <img src={item.logo} alt={item.name} className="h-5 w-5 object-contain filter grayscale" />
+            <span className="text-white text-xs font-semibold tracking-wider font-sans uppercase">{item.name}</span>
+          </div>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
 
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1111,15 +1209,12 @@ export default function App() {
 
       {/* GORGEOUS LIQUID "START YOUR JOURNEY" NEWSLETTER CTA SECTION */}
       <section className="w-full max-w-[1320px] mx-auto px-6 mt-32 relative z-10">
-        <div className="relative rounded-[32px] overflow-hidden p-8 sm:p-12 lg:p-16 flex flex-col items-center text-center justify-center min-h-[400px] border border-white/5 shadow-2xl">
-          {/* Liquid wave background video */}
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
+        <div className="relative rounded-t-[32px] overflow-hidden p-8 sm:p-12 lg:p-16 flex flex-col items-center text-center justify-center min-h-[400px] border border-b-0 border-white/5 shadow-2xl">
+          {/* Liquid wave background video with HLS and MP4 fallback */}
+          <HlsVideo 
+            src="https://customer-cbeadsgr09pnsezs.cloudflarestream.com/697945ca6b876878dba3b23fbd2f1561/manifest/video.m3u8"
+            fallbackSrc="/_videos/v1/f0c78f536d5f21a047fb7792723a36f9d647daa1"
             className="absolute inset-0 w-full h-full object-cover opacity-60 z-0"
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260210_031346_d87182fb-b0af-4273-84d1-c6fd17d6bf0f.mp4"
           />
           <div className="absolute inset-0 bg-black/70 z-[1]" />
           
@@ -1194,6 +1289,17 @@ export default function App() {
                 Read Whitepaper
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* ANIMATED LOGO CLOUD SECTION */}
+        <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-b-[32px] py-6 px-8 relative z-10 flex flex-col md:flex-row items-center gap-6 justify-between">
+          <div className="flex items-center gap-4 shrink-0">
+            <span className="text-neutral-400 text-xs font-bold uppercase tracking-widest font-sans">Powering the best teams</span>
+            <div className="hidden md:block h-6 w-px bg-white/10" />
+          </div>
+          <div className="flex-1 overflow-hidden w-full">
+            <InfiniteSlider />
           </div>
         </div>
       </section>
