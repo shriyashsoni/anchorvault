@@ -286,6 +286,15 @@ export default function App() {
     const val = parseFloat(lockCollateralAmount);
     if (isNaN(val) || val <= 0) return;
 
+    // Premium validation check to prevent VM traps and improve UX
+    const userBalanceVal = parseFloat(balances.vaultToken || "0");
+    if (val > userBalanceVal) {
+      setTxStep("error");
+      setTxProgress(0);
+      setTxError(`Insufficient $VAULT token balance. You have ${userBalanceVal.toFixed(7)} $VAULT, but tried to stake/lock ${val.toFixed(7)} $VAULT. Please deposit USDC in the "Deposit & Earn" tab to mint $VAULT shares first.`);
+      return;
+    }
+
     try {
       setTxStep("building");
       setTxProgress(10);
@@ -364,6 +373,17 @@ export default function App() {
     const val = parseFloat(drawAmount);
     if (isNaN(val) || val <= 0) return;
 
+    // Premium validation check to prevent VM traps and improve UX
+    const limit = userAnchorState ? parseFloat(userAnchorState.creditLimit) : 0;
+    const active = userAnchorState ? parseFloat(userAnchorState.activeDraw) : 0;
+    const remaining = limit - active;
+    if (val > remaining) {
+      setTxStep("error");
+      setTxProgress(0);
+      setTxError(`Insufficient credit line. Your remaining borrowable capacity is ${remaining.toFixed(2)} USDC (Limit: ${limit.toFixed(2)} USDC, Active: ${active.toFixed(2)} USDC), but you tried to draw ${val.toFixed(2)} USDC. Please stake more collateral to expand your credit limit.`);
+      return;
+    }
+
     try {
       setTxStep("building");
       setTxProgress(10);
@@ -402,6 +422,23 @@ export default function App() {
     e.preventDefault();
     const val = parseFloat(repayAmount);
     if (isNaN(val) || val <= 0) return;
+
+    // Premium validation check to prevent VM traps and improve UX
+    const userUSDC = parseFloat(balances.usdc || "0");
+    if (val > userUSDC) {
+      setTxStep("error");
+      setTxProgress(0);
+      setTxError(`Insufficient USDC balance. You have ${userUSDC.toFixed(2)} USDC, but tried to repay ${val.toFixed(2)} USDC. Please claim mock USDC from the Stellar Sandbox faucet first.`);
+      return;
+    }
+
+    const active = userAnchorState ? parseFloat(userAnchorState.activeDraw) : 0;
+    if (val > active) {
+      setTxStep("error");
+      setTxProgress(0);
+      setTxError(`Repayment exceeds debt. Your active borrowed amount is ${active.toFixed(2)} USDC, but you tried to repay ${val.toFixed(2)} USDC. Repayments cannot exceed outstanding debt.`);
+      return;
+    }
 
     try {
       setTxStep("building");
