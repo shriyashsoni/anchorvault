@@ -805,17 +805,18 @@ export default function App() {
           {/* Action Buttons (Right, Desktop Only) */}
           <div className="hidden lg:flex items-center gap-4">
             <button 
-              onClick={walletConnected ? () => { setShowDashboard(true); setDashboardTab("wallet"); } : handleConnectWallet}
-              className="bg-white border border-[#d4d4d4] rounded-[8px] text-[#171717] font-semibold text-sm px-5 py-2.5 hover:bg-white/90 transition-all font-manrope flex items-center gap-1"
-            >
-              <span>{walletConnected ? `${walletAddress.substring(0, 4)}...${walletAddress.substring(38)}` : "connect wallet"}</span>
-              {walletConnected && <span className="h-1.5 w-1.5 rounded-full bg-green-500" />}
-            </button>
-            <button 
               onClick={walletConnected ? () => { setShowDashboard(true); setDashboardTab("overview"); } : handleConnectWallet}
-              className="bg-[#7b39fc] rounded-[8px] text-[#fafafa] font-semibold text-sm px-5 py-2.5 hover:bg-[#8b4eff] transition-all shadow-md shadow-[#7b39fc]/20 font-manrope"
+              className="bg-[#7b39fc] rounded-[8px] text-[#fafafa] font-semibold text-sm px-6 py-2.5 hover:bg-[#8b4eff] transition-all shadow-md shadow-[#7b39fc]/20 font-manrope flex items-center gap-2"
             >
-              Launch DeFi Portal
+              {walletConnected ? (
+                <>
+                  <span>Enter DeFi Portal</span>
+                  <span className="text-xs opacity-75 font-normal">({walletAddress.substring(0, 4)}...{walletAddress.substring(38)})</span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                </>
+              ) : (
+                <span>Connect Wallet</span>
+              )}
             </button>
           </div>
 
@@ -855,16 +856,17 @@ export default function App() {
             
             <div className="flex flex-col gap-4 w-full max-w-xs mt-8">
               <button 
-                onClick={() => { setMobileMenuOpen(false); if (!walletConnected) handleConnectWallet(); else { setShowDashboard(true); setDashboardTab("wallet"); } }}
-                className="bg-white border border-[#d4d4d4] rounded-[8px] text-[#171717] font-semibold text-base py-3 hover:bg-white/90 w-full"
-              >
-                {walletConnected ? `${walletAddress.substring(0, 4)}...${walletAddress.substring(38)}` : "connect wallet"}
-              </button>
-              <button 
                 onClick={() => { setMobileMenuOpen(false); if (walletConnected) { setShowDashboard(true); setDashboardTab("overview"); } else { handleConnectWallet(); } }}
-                className="bg-[#7b39fc] rounded-[8px] text-[#fafafa] font-semibold text-base py-3 hover:bg-[#8b4eff] w-full shadow-lg shadow-[#7b39fc]/20"
+                className="bg-[#7b39fc] rounded-[8px] text-[#fafafa] font-semibold text-base py-3 hover:bg-[#8b4eff] w-full shadow-lg shadow-[#7b39fc]/20 flex items-center justify-center gap-2"
               >
-                Launch DeFi Portal
+                {walletConnected ? (
+                  <>
+                    <span>Enter DeFi Portal</span>
+                    <span className="text-xs opacity-75 font-normal">({walletAddress.substring(0, 4)}...{walletAddress.substring(38)})</span>
+                  </>
+                ) : (
+                  <span>Connect Wallet</span>
+                )}
               </button>
             </div>
           </div>
@@ -911,7 +913,7 @@ export default function App() {
               onClick={walletConnected ? () => { setShowDashboard(true); setDashboardTab("overview"); } : handleConnectWallet}
               className="bg-[#7b39fc] hover:bg-[#8b4eff] text-white font-cabin font-medium text-[16px] px-8 py-3.5 rounded-[10px] transition-all shadow-lg shadow-[#7b39fc]/20 transform hover:-translate-y-0.5 duration-200"
             >
-              Launch DeFi Portal
+              {walletConnected ? "Enter DeFi Portal" : "Connect Wallet"}
             </button>
             <button 
               onClick={walletConnected ? () => { setShowDashboard(true); setDashboardTab("registry"); } : handleConnectWallet}
