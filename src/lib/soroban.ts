@@ -719,40 +719,44 @@ function sleep(ms: number) {
 export async function fetchRegisteredAnchors(callerPubKey: string): Promise<RegisteredAnchor[]> {
   const list: RegisteredAnchor[] = [];
   
-  for (const item of ANCHOR_LIST) {
+  // Create a dynamic query list including the connected wallet address
+  const queryList = [...ANCHOR_LIST];
+  if (callerPubKey && !queryList.some(a => a.address.toLowerCase() === callerPubKey.toLowerCase())) {
+    queryList.unshift({
+      name: "Your Connected Anchor",
+      corridor: "Custom Corridor (USDC)",
+      address: callerPubKey
+    });
+  }
+  
+  for (const item of queryList) {
     try {
       // Query AnchorRegistry
       const registryRecord = await fetchAnchorRegistryRecord(callerPubKey, item.address);
+      if (!registryRecord || !registryRecord.isWhitelisted) {
+        continue; // Skip if not whitelisted on-chain
+      }
+
       // Query CoreVault
       const vaultRecord = await fetchAnchorVaultState(callerPubKey, item.address);
       
-      const isWhitelisted = registryRecord?.isWhitelisted ?? false;
-      const creditLimit = registryRecord ? formatTokenAmount(registryRecord.creditLimit, 7) : "0";
-      const reputationScore = registryRecord ? `${(registryRecord.reputationScore / 10).toFixed(1)}%` : "80.0%";
-      const lockedCollateral = registryRecord ? formatTokenAmount(registryRecord.lockedCollateral, 7) : "0";
+      const creditLimit = formatTokenAmount(registryRecord.creditLimit, 7);
+      const reputationScore = `${(registryRecord.reputationScore / 10).toFixed(1)}%`;
+      const lockedCollateral = formatTokenAmount(registryRecord.lockedCollateral, 7);
+      const isRegisteredInVault = vaultRecord?.isRegistered ?? false;
       
-      list.push({
-        name: item.name,
-        corridor: item.corridor,
-        address: item.address,
-        isWhitelisted,
-        creditLimit,
-        reputationScore,
-        lockedCollateral,
-        status: (isWhitelisted && vaultRecord?.isRegistered) ? "Active" : "Active" // Keep it Active if registered on registry
-      });
-    } catch (err: any) {
-      console.warn(`[Soroban] Failed to fetch on-chain state for anchor ${item.name}:`, err.message);
       list.push({
         name: item.name,
         corridor: item.corridor,
         address: item.address,
         isWhitelisted: true,
-        creditLimit: "150000",
-        reputationScore: "80.0%",
-        lockedCollateral: "0",
-        status: "Active"
+        creditLimit,
+        reputationScore,
+        lockedCollateral,
+        status: isRegisteredInVault ? "Active" : "Pending Staking"
       });
+    } catch (err: any) {
+      console.warn(`[Soroban] Anchor ${item.name} (${item.address}) not whitelisted or state not found.`);
     }
   }
   
