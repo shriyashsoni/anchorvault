@@ -464,9 +464,13 @@ export default function App() {
         const vr = vaultRecord.status === "fulfilled" ? vaultRecord.value : null;
         setUserAnchorState({
           isWhitelisted: regRecord.value.isWhitelisted,
-          creditLimit: formatTokenAmount(regRecord.value.creditLimit, 7),
+          creditLimit: vr && vr.isRegistered 
+            ? formatTokenAmount(vr.creditLimit, 7) 
+            : formatTokenAmount(regRecord.value.creditLimit, 7),
           lockedCollateral: formatTokenAmount(regRecord.value.lockedCollateral, 7),
-          reputationScore: `${(regRecord.value.reputationScore / 10).toFixed(1)}%`,
+          reputationScore: vr && vr.isRegistered
+            ? `${(vr.reputationScore / 10).toFixed(1)}%`
+            : `${(regRecord.value.reputationScore / 10).toFixed(1)}%`,
           activeDraw: vr ? formatTokenAmount(vr.activeDraw, 7) : "0",
           lastDrawTimestamp: vr ? vr.lastDrawTimestamp : 0
         });

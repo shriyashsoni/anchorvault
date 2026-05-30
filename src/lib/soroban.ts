@@ -1076,34 +1076,7 @@ export async function adjustCreditLimitOnChain(userPubKey: string, newLimit: str
   const deployerAddress = deployerKeypair.publicKey();
   const limitScaled = BigInt(Math.round(parseFloat(newLimit) * 1e7)); // 7 decimals
   
-  // 1. Adjust in AnchorRegistry
-  const registryContract = new Contract(CONTRACT_ADDRESSES.ANCHOR_REGISTRY);
-  const regCall = registryContract.call(
-    "adjust_credit_limit",
-    new Address(deployerAddress).toScVal(),
-    new Address(userPubKey).toScVal(),
-    nativeToScVal(limitScaled, { type: "i128" })
-  );
-  
-  const account = await sorobanServer.getAccount(deployerAddress);
-  const txReg = new TransactionBuilder(account, {
-    fee: "100000",
-    networkPassphrase: NETWORK_PASSPHRASE,
-  })
-    .addOperation(regCall)
-    .setTimeout(300)
-    .build();
-    
-  const simReg = await sorobanServer.simulateTransaction(txReg);
-  if (!rpc.Api.isSimulationSuccess(simReg)) {
-    throw new Error(rpc.Api.isSimulationError(simReg) ? simReg.error : "Registry limit adjustment simulation failed");
-  }
-  
-  const preparedReg = rpc.assembleTransaction(txReg, simReg).build();
-  preparedReg.sign(deployerKeypair);
-  await submitTransaction(preparedReg.toXDR());
-  
-  // 2. Adjust in CoreVault
+  // Adjust in CoreVault (single source of truth for drawdown limits)
   const vaultContract = new Contract(CONTRACT_ADDRESSES.CORE_VAULT);
   const vaultCall = vaultContract.call(
     "adjust_credit_limit",
@@ -1112,10 +1085,8 @@ export async function adjustCreditLimitOnChain(userPubKey: string, newLimit: str
     nativeToScVal(limitScaled, { type: "i128" })
   );
   
-  await sleep(3000); // Sequence grace
-  
-  const account2 = await sorobanServer.getAccount(deployerAddress);
-  const txVault = new TransactionBuilder(account2, {
+  const account = await sorobanServer.getAccount(deployerAddress);
+  const txVault = new TransactionBuilder(account, {
     fee: "100000",
     networkPassphrase: NETWORK_PASSPHRASE,
   })
