@@ -229,7 +229,19 @@ impl AnchorVaultContract {
         
         // Calculate settlement fee based on pool utilization at repayment
         let utilization = self::calculate_utilization(&pool);
-        let fee_rate_bps = self::calculate_fee_rate(&pool, utilization);
+        let mut fee_rate_bps = self::calculate_fee_rate(&pool, utilization);
+        
+        // Apply Reputation-based Interest Discount/Premium
+        // Standard score is 800. Perfect score is 1000.
+        // High reputation (>900) gets up to a 25% discount.
+        // Low reputation (<600) gets up to a 50% penalty to cover credit risk premium.
+        if anchor_state.reputation_score > 900 {
+            let discount_pct = (anchor_state.reputation_score - 900) / 4; // Max 25% discount
+            fee_rate_bps = (fee_rate_bps * (100 - discount_pct)) / 100;
+        } else if anchor_state.reputation_score < 600 {
+            let penalty_pct = (600 - anchor_state.reputation_score) / 8; // Max 50% penalty
+            fee_rate_bps = (fee_rate_bps * (100 + penalty_pct)) / 100;
+        }
         
         // Fee = principal * fee_rate_bps / 10000
         let fee = (principal * fee_rate_bps as i128) / 10000i128;
@@ -255,9 +267,18 @@ impl AnchorVaultContract {
         // Update anchor record
         anchor_state.active_draw -= principal;
         
-        // Reward timely repayments by boosting reputation score
+        // Reward faster/timely repayments by boosting reputation score dynamically based on duration
+        let elapsed = env.ledger().timestamp().saturating_sub(anchor_state.last_draw_timestamp);
+        let reputation_boost = if elapsed <= 86400 {
+            25 // Speed boost for under 24 hours turnaround
+        } else if elapsed <= 259200 {
+            15 // fast payment boost under 3 days
+        } else {
+            5 // Standard boost
+        };
+        
         if anchor_state.reputation_score < 1000 {
-            anchor_state.reputation_score = (anchor_state.reputation_score + 10).min(1000);
+            anchor_state.reputation_score = (anchor_state.reputation_score + reputation_boost).min(1000);
         }
         
         pool.active_draws -= principal;
@@ -266,7 +287,7 @@ impl AnchorVaultContract {
         env.storage().persistent().set(&DataKey::Anchor(anchor), &anchor_state);
         env.storage().instance().set(&DataKey::Pool, &pool);
     }
-
+ 
     /// Register/whitelist an anchor with standard credit limit (Governance task)
     pub fn register_anchor(env: Env, admin: Address, anchor: Address, credit_limit: i128) {
         // In full impl, check admin signature
@@ -282,13 +303,54 @@ impl AnchorVaultContract {
         
         env.storage().persistent().set(&DataKey::Anchor(anchor), &anchor_state);
     }
-
+ 
     /// Update anchor credit limit based on score (Governance/Risk Management)
     pub fn adjust_credit_limit(env: Env, admin: Address, anchor: Address, new_limit: i128) {
         admin.require_auth();
         let mut state: AnchorState = env.storage().persistent().get(&DataKey::Anchor(anchor.clone())).expect("Anchor not registered");
         state.credit_limit = new_limit;
         env.storage().persistent().set(&DataKey::Anchor(anchor), &state);
+    }
+
+    /// Offset toxic/bad debt of a defaulted anchor using the accumulated Insurance Fund reserves.
+    /// This keeps LP pools safe and protects liquidity from catastrophic failures.
+    pub fn offset_defaulted_debt(env: Env, admin: Address, anchor: Address) {
+        admin.require_auth();
+        
+        let mut anchor_state: AnchorState = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Anchor(anchor.clone()))
+            .expect("Anchor not registered");
+            
+        if anchor_state.active_draw == 0 {
+            panic!("No active draw to offset");
+        }
+        
+        // Debt can only be offset if the anchor has defaulted (extreme low reputation < 450)
+        if anchor_state.reputation_score >= 450 {
+            panic!("Anchor reputation is still healthy; cannot offset active debt yet");
+        }
+        
+        let mut pool: PoolState = env.storage().instance().get(&DataKey::Pool).unwrap();
+        let mut insurance_fund: i128 = env.storage().instance().get(&DataKey::InsuranceFund).unwrap_or(0);
+        
+        // Amount to offset is the active draw or up to the insurance fund size
+        let offset_amount = anchor_state.active_draw.min(insurance_fund);
+        if offset_amount == 0 {
+            panic!("Insurance fund is empty");
+        }
+        
+        insurance_fund -= offset_amount;
+        anchor_state.active_draw -= offset_amount;
+        pool.active_draws -= offset_amount;
+        
+        // The offset amount remains in the reserve pool to restore LPs' withdrawable USDC liquidity
+        pool.reserve_balance += offset_amount;
+        
+        env.storage().instance().set(&DataKey::InsuranceFund, &insurance_fund);
+        env.storage().persistent().set(&DataKey::Anchor(anchor), &anchor_state);
+        env.storage().instance().set(&DataKey::Pool, &pool);
     }
 
     // --- View Functions ---

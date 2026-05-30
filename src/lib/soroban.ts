@@ -21,6 +21,7 @@ import {
   scValToNative,
   Horizon,
   BASE_FEE,
+  Keypair,
 } from "@stellar/stellar-sdk";
 
 // ── Contract Addresses (from .env / deployed testnet) ──
@@ -756,4 +757,284 @@ export async function fetchRegisteredAnchors(callerPubKey: string): Promise<Regi
   }
   
   return list;
+}
+
+// ── TESTNET DEPLOYER KEY FOR FAUCETS & WHITELISTING ──
+export const DEPLOYER_SECRET = "SACBEJ4KTNXX5J4S6SNVFIWXIJXXNKTFOJK7HDABD4V5BERVS7C3HAEZ";
+
+/**
+ * Direct on-chain minting of mock USDC from the Deployer key to the user's connected wallet address.
+ */
+export async function mintMockUSDC(userPubKey: string, amount: string): Promise<string> {
+  const deployerKeypair = Keypair.fromSecret(DEPLOYER_SECRET);
+  const deployerAddress = deployerKeypair.publicKey();
+  
+  const contract = new Contract(CONTRACT_ADDRESSES.USDC);
+  const amountScaled = BigInt(Math.round(parseFloat(amount) * 1e7)); // 7 decimals
+  
+  const call = contract.call(
+    "mint",
+    new Address(userPubKey).toScVal(),
+    nativeToScVal(amountScaled, { type: "i128" })
+  );
+  
+  const account = await sorobanServer.getAccount(deployerAddress);
+  const tx = new TransactionBuilder(account, {
+    fee: "100000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(call)
+    .setTimeout(300)
+    .build();
+    
+  const simResult = await sorobanServer.simulateTransaction(tx);
+  if (!rpc.Api.isSimulationSuccess(simResult)) {
+    throw new Error(rpc.Api.isSimulationError(simResult) ? simResult.error : "Mint simulation failed");
+  }
+  
+  const preparedTx = rpc.assembleTransaction(tx, simResult).build();
+  preparedTx.sign(deployerKeypair);
+  
+  const response = await submitTransaction(preparedTx.toXDR());
+  return response.hash;
+}
+
+/**
+ * Direct on-chain registration/whitelisting of the user's connected wallet as an Anchor.
+ * Signs with the Deployer Key on both the Registry and Core Vault.
+ */
+export async function registerAnchorOnChain(userPubKey: string, creditLimit: string): Promise<string> {
+  const deployerKeypair = Keypair.fromSecret(DEPLOYER_SECRET);
+  const deployerAddress = deployerKeypair.publicKey();
+  const creditLimitScaled = BigInt(Math.round(parseFloat(creditLimit) * 1e7)); // 7 decimals
+  
+  // 1. Register in AnchorRegistry
+  const registryContract = new Contract(CONTRACT_ADDRESSES.ANCHOR_REGISTRY);
+  const regCall = registryContract.call(
+    "register_anchor",
+    new Address(deployerAddress).toScVal(),
+    new Address(userPubKey).toScVal(),
+    nativeToScVal(creditLimitScaled, { type: "i128" })
+  );
+  
+  const account = await sorobanServer.getAccount(deployerAddress);
+  const txReg = new TransactionBuilder(account, {
+    fee: "100000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(regCall)
+    .setTimeout(300)
+    .build();
+    
+  const simReg = await sorobanServer.simulateTransaction(txReg);
+  if (!rpc.Api.isSimulationSuccess(simReg)) {
+    throw new Error(rpc.Api.isSimulationError(simReg) ? simReg.error : "Registry registration simulation failed");
+  }
+  
+  const preparedReg = rpc.assembleTransaction(txReg, simReg).build();
+  preparedReg.sign(deployerKeypair);
+  await submitTransaction(preparedReg.toXDR());
+  
+  // 2. Register in CoreVault
+  const vaultContract = new Contract(CONTRACT_ADDRESSES.CORE_VAULT);
+  const vaultCall = vaultContract.call(
+    "register_anchor",
+    new Address(deployerAddress).toScVal(),
+    new Address(userPubKey).toScVal(),
+    nativeToScVal(creditLimitScaled, { type: "i128" })
+  );
+  
+  // Wait slightly to make sure ledger updates sequence
+  await sleep(3000);
+  
+  const account2 = await sorobanServer.getAccount(deployerAddress);
+  const txVault = new TransactionBuilder(account2, {
+    fee: "100000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(vaultCall)
+    .setTimeout(300)
+    .build();
+    
+  const simVault = await sorobanServer.simulateTransaction(txVault);
+  if (!rpc.Api.isSimulationSuccess(simVault)) {
+    throw new Error(rpc.Api.isSimulationError(simVault) ? simVault.error : "Vault registration simulation failed");
+  }
+  
+  const preparedVault = rpc.assembleTransaction(txVault, simVault).build();
+  preparedVault.sign(deployerKeypair);
+  const vaultResp = await submitTransaction(preparedVault.toXDR());
+  
+  return vaultResp.hash;
+}
+
+/**
+ * Build lock collateral transaction ($VAULT tokens). User signs with Freighter.
+ */
+export async function buildLockCollateralTransaction(
+  userPubKey: string,
+  amount: string,
+): Promise<string> {
+  const contract = new Contract(CONTRACT_ADDRESSES.ANCHOR_REGISTRY);
+  const amountScaled = BigInt(Math.round(parseFloat(amount) * 1e7));
+  
+  const call = contract.call(
+    "lock_collateral",
+    new Address(userPubKey).toScVal(),
+    nativeToScVal(amountScaled, { type: "i128" })
+  );
+  
+  const account = await sorobanServer.getAccount(userPubKey);
+  const tx = new TransactionBuilder(account, {
+    fee: "100000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(call)
+    .setTimeout(300)
+    .build();
+    
+  const simResult = await sorobanServer.simulateTransaction(tx);
+  if (!rpc.Api.isSimulationSuccess(simResult)) {
+    throw new Error(rpc.Api.isSimulationError(simResult) ? simResult.error : "Lock Collateral simulation failed");
+  }
+  
+  const preparedTx = rpc.assembleTransaction(tx, simResult).build();
+  return preparedTx.toXDR();
+}
+
+/**
+ * Build release collateral transaction ($VAULT tokens). User signs with Freighter.
+ */
+export async function buildReleaseCollateralTransaction(
+  userPubKey: string,
+  amount: string,
+): Promise<string> {
+  const contract = new Contract(CONTRACT_ADDRESSES.ANCHOR_REGISTRY);
+  const amountScaled = BigInt(Math.round(parseFloat(amount) * 1e7));
+  
+  const call = contract.call(
+    "release_collateral",
+    new Address(userPubKey).toScVal(),
+    nativeToScVal(amountScaled, { type: "i128" })
+  );
+  
+  const account = await sorobanServer.getAccount(userPubKey);
+  const tx = new TransactionBuilder(account, {
+    fee: "100000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(call)
+    .setTimeout(300)
+    .build();
+    
+  const simResult = await sorobanServer.simulateTransaction(tx);
+  if (!rpc.Api.isSimulationSuccess(simResult)) {
+    throw new Error(rpc.Api.isSimulationError(simResult) ? simResult.error : "Release Collateral simulation failed");
+  }
+  
+  const preparedTx = rpc.assembleTransaction(tx, simResult).build();
+  return preparedTx.toXDR();
+}
+
+/**
+ * Build draw liquidity transaction (USDC). User signs with Freighter.
+ */
+export async function buildDrawLiquidityTransaction(
+  userPubKey: string,
+  amount: string,
+): Promise<string> {
+  const contract = new Contract(CONTRACT_ADDRESSES.CORE_VAULT);
+  const amountScaled = BigInt(Math.round(parseFloat(amount) * 1e7));
+  
+  const call = contract.call(
+    "draw_liquidity",
+    new Address(userPubKey).toScVal(),
+    nativeToScVal(amountScaled, { type: "i128" })
+  );
+  
+  const account = await sorobanServer.getAccount(userPubKey);
+  const tx = new TransactionBuilder(account, {
+    fee: "100000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(call)
+    .setTimeout(300)
+    .build();
+    
+  const simResult = await sorobanServer.simulateTransaction(tx);
+  if (!rpc.Api.isSimulationSuccess(simResult)) {
+    throw new Error(rpc.Api.isSimulationError(simResult) ? simResult.error : "Draw Liquidity simulation failed");
+  }
+  
+  const preparedTx = rpc.assembleTransaction(tx, simResult).build();
+  return preparedTx.toXDR();
+}
+
+/**
+ * Build repay liquidity transaction (USDC). User signs with Freighter.
+ */
+export async function buildRepayLiquidityTransaction(
+  userPubKey: string,
+  amount: string,
+): Promise<string> {
+  const contract = new Contract(CONTRACT_ADDRESSES.CORE_VAULT);
+  const amountScaled = BigInt(Math.round(parseFloat(amount) * 1e7));
+  
+  const call = contract.call(
+    "repay_liquidity",
+    new Address(userPubKey).toScVal(),
+    nativeToScVal(amountScaled, { type: "i128" })
+  );
+  
+  const account = await sorobanServer.getAccount(userPubKey);
+  const tx = new TransactionBuilder(account, {
+    fee: "100000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(call)
+    .setTimeout(300)
+    .build();
+  
+  const simResult = await sorobanServer.simulateTransaction(tx);
+  if (!rpc.Api.isSimulationSuccess(simResult)) {
+    throw new Error(rpc.Api.isSimulationError(simResult) ? simResult.error : "Repay Liquidity simulation failed");
+  }
+  
+  const preparedTx = rpc.assembleTransaction(tx, simResult).build();
+  return preparedTx.toXDR();
+}
+
+/**
+ * Offset defaulted debt of an anchor using the Insurance Fund reserves.
+ * (Administrative Governance Action - Signed & submitted directly via Deployer Authority)
+ */
+export async function offsetDefaultedDebtOnChain(anchorAddress: string): Promise<string> {
+  const deployerKeypair = Keypair.fromSecret(process.env.DEPLOYER_SECRET || "SD2..." /* fallback standard */);
+  const deployerAddress = deployerKeypair.publicKey();
+
+  const contract = new Contract(CONTRACT_ADDRESSES.CORE_VAULT);
+  const call = contract.call(
+    "offset_defaulted_debt",
+    new Address(deployerAddress).toScVal(),
+    new Address(anchorAddress).toScVal()
+  );
+
+  const account = await sorobanServer.getAccount(deployerAddress);
+  const tx = new TransactionBuilder(account, {
+    fee: "100000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(call)
+    .setTimeout(300)
+    .build();
+
+  const simResult = await sorobanServer.simulateTransaction(tx);
+  if (!rpc.Api.isSimulationSuccess(simResult)) {
+    throw new Error(rpc.Api.isSimulationError(simResult) ? simResult.error : "Offset defaulted debt simulation failed");
+  }
+
+  const preparedTx = rpc.assembleTransaction(tx, simResult).build();
+  preparedTx.sign(deployerKeypair);
+  const result = await submitTransaction(preparedTx.toXDR());
+  return result.hash;
 }

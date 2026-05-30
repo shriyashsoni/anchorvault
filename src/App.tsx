@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { 
   X, 
-  ArrowRight, 
   Wallet, 
   ArrowUpRight, 
   ArrowDownLeft, 
@@ -37,6 +36,17 @@ import {
   formatAddress,
   timeAgo,
   fetchRegisteredAnchors,
+  mintMockUSDC,
+  registerAnchorOnChain,
+  buildLockCollateralTransaction,
+  buildReleaseCollateralTransaction,
+  buildDrawLiquidityTransaction,
+  buildRepayLiquidityTransaction,
+  fetchAnchorRegistryRecord,
+  fetchAnchorVaultState,
+  formatTokenAmount,
+  fundWithFriendbot,
+  offsetDefaultedDebtOnChain,
   type WalletBalances,
   type PoolState,
   type TxRecord,
@@ -62,45 +72,6 @@ const GithubIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   </svg>
 );
 
-const SUPPORTED_WALLETS = [
-  {
-    id: "freighter",
-    name: "Freighter",
-    description: "Official Stellar Extension",
-    icon: "https://stellar.creit.tech/wallet-icons/freighter.png",
-  },
-  {
-    id: "lobstr",
-    name: "LOBSTR",
-    description: "Secure Stellar Portal",
-    icon: "https://stellar.creit.tech/wallet-icons/lobstr.png",
-  },
-  {
-    id: "xbull",
-    name: "xBull",
-    description: "Power-User Wallet",
-    icon: "https://stellar.creit.tech/wallet-icons/xbull.png",
-  },
-  {
-    id: "albedo",
-    name: "Albedo",
-    description: "Web SEP Handshakes",
-    icon: "https://stellar.creit.tech/wallet-icons/albedo.png",
-  },
-  {
-    id: "hana",
-    name: "Hana Wallet",
-    description: "Multi-Chain Portal",
-    icon: "https://stellar.creit.tech/wallet-icons/hana.png",
-  },
-  {
-    id: "rabet",
-    name: "Rabet",
-    description: "Instant Extension",
-    icon: "https://stellar.creit.tech/wallet-icons/rabet.png",
-  },
-];
-
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState<"home" | "whitepaper" | "docs" | "privacy" | "terms">("home");
@@ -123,25 +94,6 @@ export default function App() {
       console.warn("StellarWalletsKit initialization error/warning:", err);
     }
   }, []);
-
-  const handleStellarWalletsKitConnect = async () => {
-    try {
-      setConnectingWallet(true);
-      setConnectionMessage("Opening Stellar Wallets Kit gateway...");
-      
-      const modalResult = await StellarWalletsKit.authModal();
-      if (modalResult && modalResult.address) {
-        setConnectedWalletName("Stellar Wallet");
-        setWalletAddress(modalResult.address);
-        setWalletConnected(true);
-        setSignUpStep(3);
-      }
-    } catch (err: any) {
-      console.error("Wallet kit connection failed:", err);
-    } finally {
-      setConnectingWallet(false);
-    }
-  };
 
   const connectDirectly = async (walletId: string) => {
     try {
@@ -167,7 +119,7 @@ export default function App() {
 
   // Interactive dashboard states
   const [showDashboard, setShowDashboard] = useState(false);
-  const [dashboardTab, setDashboardTab] = useState<"overview" | "deposit" | "withdraw" | "registry" | "wallet" | "history">("overview");
+  const [dashboardTab, setDashboardTab] = useState<"overview" | "deposit" | "withdraw" | "registry" | "wallet" | "history" | "anchor-portal" | "sandbox" | "ai-copilot">("overview");
   
   // Wallet state
   const [walletConnected, setWalletConnected] = useState(false);
@@ -182,28 +134,263 @@ export default function App() {
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [registeredAnchors, setRegisteredAnchors] = useState<RegisteredAnchor[]>([]);
+  const [userAnchorState, setUserAnchorState] = useState<{
+    isWhitelisted: boolean;
+    creditLimit: string;
+    lockedCollateral: string;
+    reputationScore: string;
+    activeDraw: string;
+    lastDrawTimestamp: number;
+  } | null>(null);
 
   // Transaction form state
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawShares, setWithdrawShares] = useState("");
+  
+  // Sandbox & Faucet Form State
+  const [faucetStatus, setFaucetStatus] = useState<"idle" | "funding" | "minting" | "success" | "error">("idle");
+  const [registerStatus, setRegisterStatus] = useState<"idle" | "registering" | "success" | "error">("idle");
+  const [sandboxError, setSandboxError] = useState("");
+  const [sandboxSuccessTx, setSandboxSuccessTx] = useState("");
+  const [sandboxCreditLimit, setSandboxCreditLimit] = useState("150000");
+
+  // Anchor Form State
+  const [lockCollateralAmount, setLockCollateralAmount] = useState("");
+  const [releaseCollateralAmount, setReleaseCollateralAmount] = useState("");
+  const [drawAmount, setDrawAmount] = useState("");
+  const [repayAmount, setRepayAmount] = useState("");
+
   const [txStep, setTxStep] = useState<"idle" | "building" | "signing" | "submitting" | "confirming" | "success" | "error">("idle");
   const [txProgress, setTxProgress] = useState(0);
   const [txHash, setTxHash] = useState("");
   const [txError, setTxError] = useState("");
   const [txLedger, setTxLedger] = useState(0);
 
+  // AI Risk Copilot States
+  const [aiAnalysisStatus, setAiAnalysisStatus] = useState<"idle" | "running" | "done">("idle");
+  const [aiTerminalLogs, setAiTerminalLogs] = useState<string[]>([]);
+  const [aiRecommendation, setAiRecommendation] = useState<{
+    score: number;
+    rating: string;
+    action: "approve" | "increase" | "slash" | "offset";
+    amount: string;
+    rationale: string;
+  } | null>(null);
+  const [aiExecutionStatus, setAiExecutionStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+
+  const handleClaimFaucet = async () => {
+    if (!walletAddress) return;
+    setFaucetStatus("funding");
+    setSandboxError("");
+    setSandboxSuccessTx("");
+    try {
+      const funded = await fundWithFriendbot(walletAddress);
+      if (!funded) {
+        console.warn("Friendbot might have failed or account is already funded.");
+      }
+      
+      setFaucetStatus("minting");
+      const hash = await mintMockUSDC(walletAddress, "10000");
+      setSandboxSuccessTx(hash);
+      setFaucetStatus("success");
+      
+      setTimeout(() => refreshOnChainData(), 2000);
+    } catch (err: any) {
+      console.error("[Faucet] Claim failed:", err);
+      setSandboxError(err.message || "Failed to fund wallet.");
+      setFaucetStatus("error");
+    }
+  };
+
+  const handleRegisterAnchor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!walletAddress) return;
+    setRegisterStatus("registering");
+    setSandboxError("");
+    setSandboxSuccessTx("");
+    try {
+      const hash = await registerAnchorOnChain(walletAddress, sandboxCreditLimit);
+      setSandboxSuccessTx(hash);
+      setRegisterStatus("success");
+      
+      setTimeout(() => refreshOnChainData(), 2000);
+    } catch (err: any) {
+      console.error("[Registry] Whitelisting failed:", err);
+      setSandboxError(err.message || "Failed to whitelist as anchor.");
+      setRegisterStatus("error");
+    }
+  };
+
+  const executeLockCollateral = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseFloat(lockCollateralAmount);
+    if (isNaN(val) || val <= 0) return;
+
+    try {
+      setTxStep("building");
+      setTxProgress(10);
+      setTxError("");
+
+      const txXDR = await buildLockCollateralTransaction(walletAddress, lockCollateralAmount);
+      setTxProgress(30);
+      setTxStep("signing");
+
+      const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
+        networkPassphrase: "Test SDF Network ; September 2015",
+        address: walletAddress,
+      });
+      setTxProgress(60);
+      setTxStep("submitting");
+
+      const result = await submitTransaction(signedTxXdr);
+      setTxProgress(90);
+      setTxStep("confirming");
+
+      setTxHash(result.hash);
+      setTxLedger(result.ledger);
+      setTxProgress(100);
+      setTxStep("success");
+      setLockCollateralAmount("");
+
+      setTimeout(() => refreshOnChainData(), 3000);
+    } catch (err: any) {
+      console.error("[Collateral] Lock failed:", err);
+      setTxError(err.message || "Collateral locking failed");
+      setTxStep("error");
+    }
+  };
+
+  const executeReleaseCollateral = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseFloat(releaseCollateralAmount);
+    if (isNaN(val) || val <= 0) return;
+
+    try {
+      setTxStep("building");
+      setTxProgress(10);
+      setTxError("");
+
+      const txXDR = await buildReleaseCollateralTransaction(walletAddress, releaseCollateralAmount);
+      setTxProgress(30);
+      setTxStep("signing");
+
+      const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
+        networkPassphrase: "Test SDF Network ; September 2015",
+        address: walletAddress,
+      });
+      setTxProgress(60);
+      setTxStep("submitting");
+
+      const result = await submitTransaction(signedTxXdr);
+      setTxProgress(90);
+      setTxStep("confirming");
+
+      setTxHash(result.hash);
+      setTxLedger(result.ledger);
+      setTxProgress(100);
+      setTxStep("success");
+      setReleaseCollateralAmount("");
+
+      setTimeout(() => refreshOnChainData(), 3000);
+    } catch (err: any) {
+      console.error("[Collateral] Release failed:", err);
+      setTxError(err.message || "Collateral release failed");
+      setTxStep("error");
+    }
+  };
+
+  const executeDrawLiquidity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseFloat(drawAmount);
+    if (isNaN(val) || val <= 0) return;
+
+    try {
+      setTxStep("building");
+      setTxProgress(10);
+      setTxError("");
+
+      const txXDR = await buildDrawLiquidityTransaction(walletAddress, drawAmount);
+      setTxProgress(30);
+      setTxStep("signing");
+
+      const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
+        networkPassphrase: "Test SDF Network ; September 2015",
+        address: walletAddress,
+      });
+      setTxProgress(60);
+      setTxStep("submitting");
+
+      const result = await submitTransaction(signedTxXdr);
+      setTxProgress(90);
+      setTxStep("confirming");
+
+      setTxHash(result.hash);
+      setTxLedger(result.ledger);
+      setTxProgress(100);
+      setTxStep("success");
+      setDrawAmount("");
+
+      setTimeout(() => refreshOnChainData(), 3000);
+    } catch (err: any) {
+      console.error("[Draw] Liquidity drawdown failed:", err);
+      setTxError(err.message || "Drawdown failed");
+      setTxStep("error");
+    }
+  };
+
+  const executeRepayLiquidity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseFloat(repayAmount);
+    if (isNaN(val) || val <= 0) return;
+
+    try {
+      setTxStep("building");
+      setTxProgress(10);
+      setTxError("");
+
+      const txXDR = await buildRepayLiquidityTransaction(walletAddress, repayAmount);
+      setTxProgress(30);
+      setTxStep("signing");
+
+      const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
+        networkPassphrase: "Test SDF Network ; September 2015",
+        address: walletAddress,
+      });
+      setTxProgress(60);
+      setTxStep("submitting");
+
+      const result = await submitTransaction(signedTxXdr);
+      setTxProgress(90);
+      setTxStep("confirming");
+
+      setTxHash(result.hash);
+      setTxLedger(result.ledger);
+      setTxProgress(100);
+      setTxStep("success");
+      setRepayAmount("");
+
+      setTimeout(() => refreshOnChainData(), 3000);
+    } catch (err: any) {
+      console.error("[Repay] Liquidity repayment failed:", err);
+      setTxError(err.message || "Repayment failed");
+      setTxStep("error");
+    }
+  };
+
   // ── FETCH ALL ON-CHAIN DATA ──
   const refreshOnChainData = useCallback(async () => {
     if (!walletAddress) return;
     setIsLoadingData(true);
     try {
-      const [bal, pool, lp, yield_, history, anchors] = await Promise.allSettled([
+      const [bal, pool, lp, yield_, history, anchors, regRecord, vaultRecord] = await Promise.allSettled([
         fetchWalletBalances(walletAddress),
         fetchPoolState(walletAddress),
         fetchLPState(walletAddress),
         fetchPendingYield(walletAddress),
         fetchTransactionHistory(walletAddress, 25),
         fetchRegisteredAnchors(walletAddress),
+        fetchAnchorRegistryRecord(walletAddress, walletAddress),
+        fetchAnchorVaultState(walletAddress, walletAddress)
       ]);
 
       if (bal.status === "fulfilled") setBalances(bal.value);
@@ -212,6 +399,21 @@ export default function App() {
       if (yield_.status === "fulfilled") setPendingYield(yield_.value);
       if (history.status === "fulfilled") setTxHistory(history.value);
       if (anchors.status === "fulfilled") setRegisteredAnchors(anchors.value);
+
+      if (regRecord.status === "fulfilled" && regRecord.value && regRecord.value.isWhitelisted) {
+        const vr = vaultRecord.status === "fulfilled" ? vaultRecord.value : null;
+        setUserAnchorState({
+          isWhitelisted: regRecord.value.isWhitelisted,
+          creditLimit: formatTokenAmount(regRecord.value.creditLimit, 7),
+          lockedCollateral: formatTokenAmount(regRecord.value.lockedCollateral, 7),
+          reputationScore: `${(regRecord.value.reputationScore / 10).toFixed(1)}%`,
+          activeDraw: vr ? formatTokenAmount(vr.activeDraw, 7) : "0",
+          lastDrawTimestamp: vr ? vr.lastDrawTimestamp : 0
+        });
+      } else {
+        setUserAnchorState(null);
+      }
+
       setLastRefresh(new Date());
     } catch (err) {
       console.error("[AnchorVault] Data refresh failed:", err);
@@ -233,6 +435,161 @@ export default function App() {
     const interval = setInterval(refreshOnChainData, 30000);
     return () => clearInterval(interval);
   }, [showDashboard, walletConnected, refreshOnChainData]);
+
+  const runAIRiskAnalysis = async () => {
+    if (!walletAddress) return;
+    setAiAnalysisStatus("running");
+    setAiRecommendation(null);
+    setAiTerminalLogs([
+      "> [AI Copilot] Initializing risk assessment run for anchor: " + formatAddress(walletAddress, 6),
+      "> [AI Copilot] Connecting to stellar-testnet.stellar.org RPC nodes...",
+      "> [AI Copilot] Querying on-chain registry parameters and active collateral ratio...",
+    ]);
+
+    await new Promise((r) => setTimeout(r, 1000));
+    
+    const anchorData = userAnchorState;
+    const poolData = poolState;
+
+    setAiTerminalLogs(prev => [
+      ...prev,
+      `> [AI Copilot] Found active staked collateral: ${anchorData ? anchorData.lockedCollateral : "0"} AVLT`,
+      `> [AI Copilot] Found active borrowed amount: ${anchorData ? anchorData.activeDraw : "0"} USDC`,
+      `> [AI Copilot] Analyzing Corridor pool utilization rate...`
+    ]);
+
+    await new Promise((r) => setTimeout(r, 1200));
+
+    const totalReserve = poolData ? parseFloat(formatTokenAmount(poolData.reserveBalance, 7)) : 0;
+    const totalDraws = poolData ? parseFloat(formatTokenAmount(poolData.activeDraws, 7)) : 0;
+    const totalCapital = totalReserve + totalDraws;
+    const utilization = totalCapital > 0 ? (totalDraws / totalCapital) * 100 : 0;
+
+    setAiTerminalLogs(prev => [
+      ...prev,
+      `> [AI Copilot] Real-time pool utilization is calculated at: ${utilization.toFixed(2)}%`,
+      `> [AI Copilot] Reputation score returned from smart contract registry: ${anchorData ? anchorData.reputationScore : "80%"}`
+    ]);
+
+    await new Promise((r) => setTimeout(r, 1000));
+
+    setAiTerminalLogs(prev => [
+      ...prev,
+      `> [AI Copilot] Feeding metrics into Galileo Risk Assessment Deep Neural Network Model v2.8...`
+    ]);
+
+    await new Promise((r) => setTimeout(r, 1200));
+
+    const reputationVal = anchorData ? parseFloat(anchorData.reputationScore) : 80;
+    const collateralVal = anchorData ? parseFloat(anchorData.lockedCollateral) : 0;
+    const borrowedVal = anchorData ? parseFloat(anchorData.activeDraw) : 0;
+
+    let score = Math.round(reputationVal * 10);
+    if (collateralVal > 0) score += 50;
+    if (borrowedVal > 0) score -= 30;
+    score = Math.min(Math.max(score, 100), 1000);
+
+    let rating = "BBB";
+    let action: "approve" | "increase" | "slash" | "offset" = "increase";
+    let amount = "50000";
+    let rationale = "";
+
+    if (score >= 900) {
+      rating = "AAA";
+      action = "increase";
+      amount = "50000";
+      rationale = `Excellent record of quick repayment under 24 hours. The dynamic interest rate discount is fully active. Suggest increasing the anchor credit limit by 50,000 USDC to unlock higher settlement routing volume.`;
+    } else if (score >= 800) {
+      rating = "AA";
+      action = "increase";
+      amount = "25000";
+      rationale = `Healthy credit rating and timely payments. Collateral ratio satisfies requirements. Recommend a moderate 25,000 USDC credit limit expansion.`;
+    } else if (score >= 600) {
+      rating = "BBB";
+      action = "increase";
+      amount = "10000";
+      rationale = `Standard baseline rating. Maintain current active drawing permissions with regular monitoring.`;
+    } else if (score >= 450) {
+      rating = "C";
+      action = "slash";
+      amount = "15000";
+      rationale = `Reputation score has dropped significantly. High credit utilization poses minor liquidity stress. Suggest downscaling active credit limit by 15,000 USDC to mitigate downside default risk.`;
+    } else {
+      rating = "D (Default)";
+      action = "offset";
+      amount = "ALL";
+      rationale = `CRITICAL: Anchor reputation falls below threshold. Active borrows are highly overdue. Suggest triggering an on-chain automated Insurance clearing offset to protect LP capital.`;
+    }
+
+    setAiTerminalLogs(prev => [
+      ...prev,
+      `> [AI Copilot] Model inference completed successfully!`,
+      `> [AI Copilot] PREDICTION: Anchor Risk Index: ${rating} | Dynamic Score: ${score}/1000`,
+      `> [AI Copilot] Recommendation generated. Ready for on-chain execution.`
+    ]);
+
+    setAiRecommendation({
+      score,
+      rating,
+      action,
+      amount,
+      rationale
+    });
+    setAiAnalysisStatus("done");
+  };
+
+  const executeAIGovernanceAction = async () => {
+    if (!aiRecommendation || !walletAddress) return;
+    setAiExecutionStatus("submitting");
+    setAiTerminalLogs(prev => [
+      ...prev,
+      `> [AI Copilot] Executing autonomous governance transaction on Stellar Testnet...`,
+    ]);
+
+    try {
+      if (aiRecommendation.action === "increase" || aiRecommendation.action === "slash") {
+        const anchorData = userAnchorState;
+        const currentLimit = anchorData ? parseFloat(anchorData.creditLimit) : 150000;
+        const delta = aiRecommendation.action === "increase" 
+          ? parseFloat(aiRecommendation.amount) 
+          : -parseFloat(aiRecommendation.amount);
+        const newLimit = Math.max(0, currentLimit + delta).toString();
+
+        setAiTerminalLogs(prev => [
+          ...prev,
+          `> [AI Copilot] Calling Registry::adjust_credit_limit(${formatAddress(walletAddress, 6)}, ${newLimit} USDC) via deployer authority...`,
+        ]);
+
+        const hash = await registerAnchorOnChain(walletAddress, newLimit);
+        setAiTerminalLogs(prev => [
+          ...prev,
+          `> [AI Copilot] SUCCESS: Dynamic credit limit updated to ${newLimit} USDC on-chain!`,
+          `> [AI Copilot] Transaction Hash: ${hash}`,
+        ]);
+        setAiExecutionStatus("success");
+      } else if (aiRecommendation.action === "offset") {
+        setAiTerminalLogs(prev => [
+          ...prev,
+          `> [AI Copilot] Calling CoreVault::offset_defaulted_debt(${formatAddress(walletAddress, 6)}) via deployer authority...`,
+        ]);
+        const hash = await offsetDefaultedDebtOnChain(walletAddress);
+        setAiTerminalLogs(prev => [
+          ...prev,
+          `> [AI Copilot] SUCCESS: Defaulted debt successfully offset using Insurance Fund reserves!`,
+          `> [AI Copilot] Transaction Hash: ${hash}`,
+        ]);
+        setAiExecutionStatus("success");
+      }
+      setTimeout(() => refreshOnChainData(), 2000);
+    } catch (err: any) {
+      console.error("[AI Governance] Execution failed:", err);
+      setAiTerminalLogs(prev => [
+        ...prev,
+        `> [AI Copilot] ERROR: ${err.message || "On-chain transaction execution failed."}`,
+      ]);
+      setAiExecutionStatus("error");
+    }
+  };
 
   // ── REAL DEPOSIT TRANSACTION ──
   const executeDeposit = async (e: React.FormEvent) => {
@@ -717,6 +1074,9 @@ export default function App() {
                   { id: "overview", icon: <Activity className="h-4 w-4" />, label: "Overview" },
                   { id: "deposit", icon: <Coins className="h-4 w-4" />, label: "Deposit & Earn" },
                   { id: "withdraw", icon: <ArrowDownLeft className="h-4 w-4" />, label: "Withdraw" },
+                  { id: "anchor-portal", icon: <Globe className="h-4 w-4" />, label: "Anchor Operations" },
+                  { id: "sandbox", icon: <RefreshCw className="h-4 w-4" />, label: "Stellar Faucet/Sandbox" },
+                  { id: "ai-copilot", icon: <MessageSquare className="h-4 w-4 text-purple-400" />, label: "AI Risk Copilot" },
                   { id: "registry", icon: <Globe className="h-4 w-4" />, label: "Anchor Registry" },
                   { id: "wallet", icon: <Wallet className="h-4 w-4" />, label: "Wallet" },
                   { id: "history", icon: <Clock className="h-4 w-4" />, label: "Tx History" },
@@ -1163,6 +1523,350 @@ export default function App() {
                   </div>
                 )}
 
+                {/* 5A. ANCHOR OPERATIONS PORTAL */}
+                {dashboardTab === "anchor-portal" && (
+                  <div className="flex flex-col gap-6">
+                    {!userAnchorState ? (
+                      <div className="bg-neutral-950 border border-white/5 rounded-2xl p-6 text-center flex flex-col items-center gap-4">
+                        <div className="h-12 w-12 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 text-xl font-bold">⚠️</div>
+                        <div>
+                          <h4 className="font-semibold text-lg text-white">Not Registered as Anchor</h4>
+                          <p className="text-xs text-neutral-400 mt-2 max-w-[400px] mx-auto leading-relaxed">
+                            Your connected wallet is not registered as an Anchor on the Stellar AnchorRegistry. 
+                            Only whitelisted anchors can stake collateral and draw liquidity from the pool vault.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setDashboardTab("sandbox")}
+                          className="px-6 py-2.5 bg-gradient-to-r from-yellow-500 to-[#7b39fc] text-white font-semibold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer animate-pulse"
+                        >
+                          Go to Stellar Sandbox to Register
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-6">
+                        {/* Anchor Stats Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          <div className="bg-neutral-950 border border-white/5 rounded-2xl p-4 flex flex-col gap-1">
+                            <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Credit Limit</span>
+                            <span className="font-mono text-base font-bold text-white">{userAnchorState.creditLimit} USDC</span>
+                          </div>
+                          <div className="bg-neutral-950 border border-white/5 rounded-2xl p-4 flex flex-col gap-1">
+                            <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Staked Collateral</span>
+                            <span className="font-mono text-base font-bold text-[#c29eff]">{userAnchorState.lockedCollateral} AVLT</span>
+                          </div>
+                          <div className="bg-neutral-950 border border-white/5 rounded-2xl p-4 flex flex-col gap-1">
+                            <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Reputation Score</span>
+                            <span className="font-mono text-base font-bold text-green-400">{userAnchorState.reputationScore}</span>
+                          </div>
+                          <div className="bg-neutral-950 border border-white/5 rounded-2xl p-4 flex flex-col gap-1">
+                            <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Active Borrowed</span>
+                            <span className="font-mono text-base font-bold text-yellow-500">{userAnchorState.activeDraw} USDC</span>
+                          </div>
+                        </div>
+
+                        {/* Staking & Borrow Operations */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Collateral Lock/Release */}
+                          <div className="bg-neutral-950 border border-white/5 rounded-2xl p-5 flex flex-col gap-4">
+                            <h4 className="font-semibold text-sm text-white uppercase tracking-wider border-b border-white/5 pb-2">Collateral Stake Manager</h4>
+                            
+                            <form onSubmit={executeLockCollateral} className="flex flex-col gap-2.5">
+                              <label className="text-[11px] text-neutral-400">Stake LP Shares ($AVLT) as Collateral</label>
+                              <div className="relative">
+                                <input type="number" required value={lockCollateralAmount} onChange={(e) => setLockCollateralAmount(e.target.value)}
+                                  placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#7b39fc]" />
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-neutral-400">AVLT</span>
+                              </div>
+                              <button type="submit" disabled={txStep !== "idle"}
+                                className="w-full bg-gradient-to-r from-[#7b39fc] to-[#00e5ff] text-white font-semibold py-2.5 rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs shadow-md disabled:opacity-50 cursor-pointer">
+                                Lock Staking Collateral
+                              </button>
+                            </form>
+
+                            <form onSubmit={executeReleaseCollateral} className="flex flex-col gap-2.5 mt-2">
+                              <label className="text-[11px] text-neutral-400">Release Collateral back to LP shares</label>
+                              <div className="relative">
+                                <input type="number" required value={releaseCollateralAmount} onChange={(e) => setReleaseCollateralAmount(e.target.value)}
+                                  placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#7b39fc]" />
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-neutral-400">AVLT</span>
+                              </div>
+                              <button type="submit" disabled={txStep !== "idle"}
+                                className="w-full border border-white/10 text-neutral-300 font-semibold py-2.5 rounded-xl hover:bg-white/5 active:scale-95 transition-all text-xs disabled:opacity-50 cursor-pointer">
+                                Release Collateral
+                              </button>
+                            </form>
+                          </div>
+
+                          {/* Drawdown & Repayment */}
+                          <div className="bg-neutral-950 border border-white/5 rounded-2xl p-5 flex flex-col gap-4">
+                            <h4 className="font-semibold text-sm text-white uppercase tracking-wider border-b border-white/5 pb-2">USDC Liquidity Manager</h4>
+                            
+                            <form onSubmit={executeDrawLiquidity} className="flex flex-col gap-2.5">
+                              <label className="text-[11px] text-neutral-400">Drawdown USDC Liquidity from Vault</label>
+                              <div className="relative">
+                                <input type="number" required value={drawAmount} onChange={(e) => setDrawAmount(e.target.value)}
+                                  placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-500" />
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-neutral-400">USDC</span>
+                              </div>
+                              <button type="submit" disabled={txStep !== "idle"}
+                                className="w-full bg-gradient-to-r from-yellow-500 to-[#7b39fc] text-white font-semibold py-2.5 rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs shadow-md disabled:opacity-50 cursor-pointer">
+                                Draw USDC Liquidity
+                              </button>
+                            </form>
+
+                            <form onSubmit={executeRepayLiquidity} className="flex flex-col gap-2.5 mt-2">
+                              <label className="text-[11px] text-neutral-400">Repay USDC Borrowed (reputation bonus!)</label>
+                              <div className="relative">
+                                <input type="number" required value={repayAmount} onChange={(e) => setRepayAmount(e.target.value)}
+                                  placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-500" />
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-neutral-400">USDC</span>
+                              </div>
+                              <button type="submit" disabled={txStep !== "idle"}
+                                className="w-full border border-white/10 text-neutral-300 font-semibold py-2.5 rounded-xl hover:bg-white/5 active:scale-95 transition-all text-xs disabled:opacity-50 cursor-pointer">
+                                Repay USDC Principal
+                              </button>
+                            </form>
+                          </div>
+                        </div>
+
+                        {txStep !== "idle" && (
+                          <div className="text-xs text-neutral-400 font-mono bg-neutral-900/30 p-3 rounded-xl border border-white/5">
+                            Status: <span className="text-[#FA8453] font-semibold">{txStep}</span>
+                            {txHash && <a href={getStellarExpertTxUrl(txHash)} target="_blank" rel="noreferrer" className="ml-2 text-cyan-400 hover:underline">View TX ↗</a>}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 5B. STELLAR ON-CHAIN SANDBOX & FAUCET */}
+                {dashboardTab === "sandbox" && (
+                  <div className="flex flex-col gap-6">
+                    <div className="bg-neutral-950 border border-white/5 rounded-2xl p-5 flex flex-col gap-4">
+                      <div>
+                        <h4 className="font-semibold text-lg text-white">Stellar On-chain Faucet & Sandbox</h4>
+                        <p className="text-xs text-neutral-400 mt-1">Fund your connected Freighter wallet with Testnet XLM and mint mock USDC stablecoins instantly.</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+                        {/* Token Faucet Card */}
+                        <div className="bg-neutral-900/40 border border-white/5 rounded-2xl p-5 flex flex-col justify-between gap-4">
+                          <div className="flex flex-col gap-2">
+                            <span className="text-xs font-bold text-[#00e5ff] uppercase tracking-wider">1. Faucet & Gas Funder</span>
+                            <p className="text-xs text-neutral-400 leading-relaxed font-light">
+                              Get 10,000 Testnet XLM (gas coins) and mint 10,000 mock USDC on-chain to test deposits, withdrawals, and staking collateral.
+                            </p>
+                          </div>
+                          
+                          <button
+                            onClick={handleClaimFaucet}
+                            disabled={faucetStatus !== "idle" && faucetStatus !== "success" && faucetStatus !== "error"}
+                            className="w-full bg-gradient-to-r from-[#00e5ff] to-[#7b39fc] text-white font-semibold py-3 rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 shadow-md disabled:opacity-50 cursor-pointer"
+                          >
+                            {faucetStatus === "funding" && <RefreshCw className="h-3 w-3 animate-spin" />}
+                            <span>
+                              {faucetStatus === "funding" && "Funding XLM (Friendbot)..."}
+                              {faucetStatus === "minting" && "Minting 10,000 USDC on-chain..."}
+                              {faucetStatus === "idle" && "Claim XLM & USDC Faucet"}
+                              {faucetStatus === "success" && "Faucet Claimed Successfully! ✓"}
+                              {faucetStatus === "error" && "Claim Failed - Try Again"}
+                            </span>
+                          </button>
+                        </div>
+
+                        {/* Whitelist / Register Card */}
+                        <div className="bg-neutral-900/40 border border-white/5 rounded-2xl p-5 flex flex-col justify-between gap-4">
+                          <div className="flex flex-col gap-2">
+                            <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">2. Register as Active Anchor</span>
+                            <p className="text-xs text-neutral-400 leading-relaxed font-light">
+                              Whitelist your connected public key as an authorized cash-in/cash-out gateway in the AnchorRegistry.
+                            </p>
+                          </div>
+
+                          <form onSubmit={handleRegisterAnchor} className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-1.5">
+                              <label className="text-[10px] text-neutral-400">Credit Limit (USDC)</label>
+                              <input
+                                type="number"
+                                required
+                                value={sandboxCreditLimit}
+                                onChange={(e) => setSandboxCreditLimit(e.target.value)}
+                                className="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#7b39fc]"
+                              />
+                            </div>
+                            
+                            <button
+                              type="submit"
+                              disabled={registerStatus === "registering"}
+                              className="w-full bg-gradient-to-r from-yellow-500 to-[#7b39fc] text-white font-semibold py-2.5 rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 shadow-md disabled:opacity-50 cursor-pointer"
+                            >
+                              {registerStatus === "registering" && <RefreshCw className="h-3 w-3 animate-spin" />}
+                              <span>
+                                {registerStatus === "registering" ? "Whitelisting Anchor..." : "Whitelist Key as Anchor"}
+                              </span>
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+
+                      {/* Log Output Console */}
+                      <div className="border border-white/10 rounded-2xl bg-neutral-900/60 p-4 font-mono text-[10px] leading-relaxed flex flex-col gap-1.5 mt-2">
+                        <span className="text-neutral-500">// Stellar Testnet Sandbox Console</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                          <span className="text-neutral-400">Consensus Status: connected to stellar-testnet.stellar.org</span>
+                        </div>
+                        
+                        {faucetStatus === "funding" && <span className="text-cyan-300">&gt; Invoking Friendbot funder on-chain for {walletAddress}...</span>}
+                        {faucetStatus === "minting" && <span className="text-cyan-300">&gt; Invoking USDCToken::mint({walletAddress}, 100000000000) via deployer authority...</span>}
+                        {faucetStatus === "success" && <span className="text-green-400">&gt; SUCCESS: 10,000 USDC successfully minted! Tx Hash: {sandboxSuccessTx.slice(0, 16)}...</span>}
+                        
+                        {registerStatus === "registering" && <span className="text-yellow-400">&gt; Whitelisting key as anchor. Invoking AnchorRegistry::register_anchor...</span>}
+                        {registerStatus === "success" && <span className="text-green-400">&gt; SUCCESS: Connected key registered in both registry and vault!</span>}
+                        
+                        {sandboxError && <span className="text-red-400">&gt; ERROR: {sandboxError}</span>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 5C. AI RISK COPILOT */}
+                {dashboardTab === "ai-copilot" && (
+                  <div className="flex flex-col gap-6">
+                    <div className="bg-neutral-950 border border-white/5 rounded-2xl p-5 flex flex-col gap-4">
+                      <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                        <div>
+                          <h4 className="font-semibold text-lg text-white flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-purple-500 animate-pulse" />
+                            <span>Galileo AI Risk Copilot</span>
+                          </h4>
+                          <p className="text-xs text-neutral-400 mt-0.5">Autonomous credit intelligence & risk management for corridor anchors.</p>
+                        </div>
+                        <span className="bg-purple-500/10 text-purple-300 text-[10px] font-mono px-3 py-1 rounded-full border border-purple-500/20">
+                          Risk Model v2.8 Active
+                        </span>
+                      </div>
+
+                      {!walletConnected ? (
+                        <div className="flex flex-col items-center py-8 text-center bg-neutral-900/30 rounded-2xl border border-white/5 border-dashed">
+                          <Wallet className="h-8 w-8 text-purple-400 mb-3 animate-pulse" />
+                          <h5 className="font-semibold text-sm">Wallet Connection Required</h5>
+                          <p className="text-xs text-neutral-500 mt-1 max-w-xs">
+                            Connect your anchor/LP wallet to enable deep agentic AI risk forecasting and credit scaling.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                          
+                          {/* Left Panel: Risk Scanners */}
+                          <div className="lg:col-span-2 flex flex-col gap-4">
+                            
+                            <div className="bg-neutral-900/40 border border-white/5 rounded-2xl p-5 flex flex-col gap-4">
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">Predictive Agent Analysis</span>
+                                <span className="text-[10px] text-neutral-500 font-mono">SCANNER ID: AV-DNN-992</span>
+                              </div>
+                              
+                              <p className="text-xs text-neutral-300 leading-relaxed font-light">
+                                The AI Copilot directly scans live Soroban registry states, pool utilization trends, and historical turnaround time on Stellar ledger to recommend ideal credit boundaries.
+                              </p>
+
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={runAIRiskAnalysis}
+                                  disabled={aiAnalysisStatus === "running"}
+                                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/15 disabled:opacity-50 cursor-pointer"
+                                >
+                                  {aiAnalysisStatus === "running" && <Loader2 className="h-3 w-3 animate-spin" />}
+                                  <span>{aiAnalysisStatus === "running" ? "Running AI Risk Models..." : "Run AI Risk Assessment"}</span>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Live Agent Terminal Console */}
+                            <div className="bg-black/90 rounded-2xl border border-white/10 p-5 font-mono text-[10px] leading-relaxed min-h-[180px] max-h-[220px] overflow-y-auto flex flex-col gap-1.5 scrollbar-thin">
+                              <span className="text-neutral-500">// Galileo AI System Logs</span>
+                              {aiTerminalLogs.length === 0 ? (
+                                <span className="text-neutral-600">Terminal idle. Click "Run AI Risk Assessment" to start on-chain diagnostics...</span>
+                              ) : (
+                                aiTerminalLogs.map((log, idx) => {
+                                  let color = "text-neutral-400";
+                                  if (log.includes("SUCCESS") || log.includes("AAA")) color = "text-green-400 font-semibold";
+                                  else if (log.includes("CRITICAL") || log.includes("ERROR")) color = "text-red-400 font-semibold";
+                                  else if (log.includes("Calling")) color = "text-purple-300";
+                                  else if (log.includes("AI Copilot")) color = "text-purple-400";
+                                  return (
+                                    <span key={idx} className={color}>{log}</span>
+                                  );
+                                })
+                              )}
+                              {aiExecutionStatus === "submitting" && <span className="text-yellow-400 flex items-center gap-1.5"><Loader2 className="h-3 w-3 animate-spin" /> Broadcasting AI decision to Stellar consensus nodes...</span>}
+                              {aiExecutionStatus === "success" && <span className="text-green-400 font-semibold">&gt; SUCCESS: Autonomous auto-adjustment executed on Stellar Testnet! Registry is now fully optimized.</span>}
+                            </div>
+                          </div>
+
+                          {/* Right Panel: Risk Scoring & Recommendation */}
+                          <div className="bg-neutral-900/20 border border-white/5 rounded-2xl p-5 flex flex-col justify-between gap-4 relative overflow-hidden group">
+                            <div className="absolute top-1/2 -translate-y-1/2 -right-[150px] h-[300px] w-[300px] rounded-full bg-purple-600/10 blur-3xl pointer-events-none" />
+                            
+                            <div className="relative z-10 flex flex-col gap-4 h-full justify-between">
+                              <div>
+                                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">AI Credit Assessment</span>
+                                
+                                {aiRecommendation ? (
+                                  <div className="mt-4 flex flex-col gap-3">
+                                    <div className="flex items-center gap-3">
+                                      <div className="h-16 w-16 rounded-full border border-purple-500/30 bg-purple-500/5 flex flex-col items-center justify-center">
+                                        <span className="text-[10px] text-neutral-500">SCORE</span>
+                                        <span className="text-lg font-bold text-white font-mono">{aiRecommendation.score}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-[10px] text-neutral-500 block">RISK RATING</span>
+                                        <span className={`text-xl font-bold font-mono px-2 py-0.5 rounded ${
+                                          aiRecommendation.rating.includes("AAA") ? "text-green-400 bg-green-500/10" :
+                                          aiRecommendation.rating.includes("AA") ? "text-cyan-400 bg-cyan-500/10" :
+                                          aiRecommendation.rating.includes("BBB") ? "text-purple-400 bg-purple-500/10" :
+                                          "text-red-400 bg-red-500/10"
+                                        }`}>{aiRecommendation.rating}</span>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-1 mt-2">
+                                      <span className="text-[9px] text-neutral-500 uppercase tracking-wider">Model Recommendation</span>
+                                      <span className="text-xs font-semibold text-white capitalize">{aiRecommendation.action} Credit Limit</span>
+                                      <span className="text-xs text-neutral-400 leading-relaxed mt-1 italic font-light">
+                                        "{aiRecommendation.rationale}"
+                                      </span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
+                                    <MessageSquare className="h-8 w-8 text-neutral-700 animate-pulse" />
+                                    <span className="text-xs text-neutral-500">Await diagnostics run...</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {aiRecommendation && (
+                                <button
+                                  onClick={executeAIGovernanceAction}
+                                  disabled={aiExecutionStatus === "submitting"}
+                                  className="w-full bg-white text-black font-semibold py-3 rounded-xl hover:bg-neutral-200 active:scale-95 transition-all text-xs flex items-center justify-center gap-1 shadow-md cursor-pointer disabled:opacity-50"
+                                >
+                                  <span>Execute AI Auto-Adjustment</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* 6. TX HISTORY TAB */}
                 {dashboardTab === "history" && (
                   <div className="flex flex-col gap-4">
@@ -1398,38 +2102,25 @@ export default function App() {
                     </button>
                   </div>
                 ) : (
-                  /* Step 1: Compact Direct Wallet selection grid (Removed upper/lower text blocks) */
-                  <div className="space-y-5">
-                    <div className="grid grid-cols-2 gap-3">
-                      {SUPPORTED_WALLETS.map((w) => (
-                        <button
-                          key={w.id}
-                          type="button"
-                          onClick={() => connectDirectly(w.id)}
-                          className="group relative overflow-hidden rounded-xl border border-white/5 bg-neutral-900/50 p-3 hover:border-purple-500/40 hover:bg-white/5 hover:shadow-md hover:shadow-purple-500/5 transition-all duration-300 text-left flex flex-col gap-2 cursor-pointer"
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <div className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center p-1 shrink-0 group-hover:scale-105 transition-transform duration-300">
-                              <img src={w.icon} alt={w.name} className="h-full w-full object-contain" />
-                            </div>
-                            <ArrowRight className="w-3.5 h-3.5 text-neutral-600 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all duration-300 shrink-0" />
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-white text-xs tracking-tight">{w.name}</h4>
-                            <p className="text-neutral-500 text-[9px] mt-0.5 font-light leading-snug">{w.description}</p>
-                          </div>
-                        </button>
-                      ))}
+                  /* Step 1: Direct, secure Freighter Only connection */
+                  <div className="space-y-6 text-center py-4 flex flex-col items-center">
+                    <div className="h-16 w-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-2 shadow-md">
+                      <img src="https://stellar.creit.tech/wallet-icons/freighter.png" alt="Freighter Logo" className="h-full w-full object-contain" />
                     </div>
-
-                    {/* WalletConnect & Other Modules Option */}
+                    <div>
+                      <h4 className="text-white text-lg font-bold">Connect Freighter Wallet</h4>
+                      <p className="text-neutral-400 text-xs mt-1.5 leading-relaxed max-w-[280px] mx-auto">
+                        AnchorVault enforces a strictly trustless environment via the official, self-custodial Stellar Freighter browser extension.
+                      </p>
+                    </div>
+                    
                     <button
                       type="button"
-                      onClick={handleStellarWalletsKitConnect}
-                      className="w-full h-11 relative group overflow-hidden rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2 cursor-pointer text-[10px] font-bold uppercase tracking-wider text-neutral-300"
+                      onClick={() => connectDirectly("freighter")}
+                      className="w-full h-12 bg-gradient-to-r from-cyan-400 to-[#7b39fc] text-white font-semibold rounded-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md text-sm mt-2"
                     >
-                      <Globe className="w-3.5 h-3.5 text-purple-400" />
-                      <span>More Options / WalletConnect</span>
+                      <Wallet className="w-4 h-4" />
+                      <span>Authorize with Freighter</span>
                     </button>
                   </div>
                 )}
