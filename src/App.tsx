@@ -1245,7 +1245,7 @@ export default function App() {
 
       {/* GORGEOUS LIQUID "START YOUR JOURNEY" NEWSLETTER CTA SECTION */}
       <section className="w-full max-w-[1320px] mx-auto px-6 mt-32 relative z-10">
-        <div className="relative rounded-t-[32px] overflow-hidden p-8 sm:p-12 lg:p-16 flex flex-col items-center text-center justify-center min-h-[400px] border border-b-0 border-white/5 shadow-2xl">
+        <div className="relative rounded-t-[32px] overflow-hidden p-6 sm:p-12 lg:p-16 flex flex-col items-center text-center justify-center min-h-[400px] border border-b-0 border-[#7b39fc]/30 shadow-2xl shadow-[#7b39fc]/5">
           {/* Liquid wave background video with HLS and MP4 fallback */}
           <HlsVideo 
             src="https://customer-cbeadsgr09pnsezs.cloudflarestream.com/697945ca6b876878dba3b23fbd2f1561/manifest/video.m3u8"
@@ -1255,7 +1255,7 @@ export default function App() {
           <div className="absolute inset-0 bg-black/70 z-[1]" />
           
           {/* Content overlay */}
-          <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
+          <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center">
             {/* Glowing icon */}
             <div className="h-12 w-12 rounded-full bg-white/5 backdrop-blur border border-white/10 flex items-center justify-center mb-6">
               <Mail className="h-5 w-5 text-white animate-pulse" />
@@ -1268,8 +1268,8 @@ export default function App() {
               Join thousands of developers and liquidity providers who are already building the trustless future of cross-border Web3 remittance.
             </p>
 
-            {/* Newsletter Form */}
-            <form onSubmit={handleSubscribe} className="w-full max-w-md bg-white/[0.06] backdrop-blur-xl border border-white/15 rounded-full p-1.5 flex items-center gap-2 mb-6">
+            {/* Newsletter Form - Fully Mobile Responsive */}
+            <form onSubmit={handleSubscribe} className="w-full max-w-md bg-white/[0.06] backdrop-blur-xl border border-white/15 rounded-2xl sm:rounded-full p-2 sm:p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-6">
               <input
                 type="email"
                 placeholder="Your favorite email?"
@@ -1277,12 +1277,12 @@ export default function App() {
                 onChange={(e) => setSubscrEmail(e.target.value)}
                 required
                 disabled={subscrStatus === "loading"}
-                className="flex-1 bg-transparent border-0 outline-none text-white text-sm px-4 placeholder:text-neutral-400 font-sans"
+                className="flex-1 bg-transparent border-0 outline-none text-white text-sm px-4 py-3 sm:py-0 placeholder:text-neutral-400 font-sans"
               />
               <button
                 type="submit"
                 disabled={subscrStatus === "loading"}
-                className="bg-[#24292e] text-white hover:bg-black/90 font-semibold text-xs uppercase tracking-wider px-6 py-3.5 rounded-full transition-all shrink-0 font-sans cursor-pointer"
+                className="bg-[#7b39fc] hover:bg-[#682edf] text-white font-semibold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl sm:rounded-full transition-all shrink-0 font-sans cursor-pointer text-center"
               >
                 {subscrStatus === "loading" ? "Notifying..." : "Stay Notified"}
               </button>
@@ -1310,17 +1310,17 @@ export default function App() {
               </motion.div>
             )}
 
-            {/* CTAs */}
-            <div className="flex flex-row items-center gap-4">
+            {/* CTAs - Fully Mobile Responsive */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
               <button
                 onClick={walletConnected ? () => { setShowDashboard(true); setDashboardTab("overview"); } : handleConnectWallet}
-                className="bg-white text-black hover:bg-neutral-100 font-semibold text-sm px-6 py-2.5 rounded-full transition-all font-sans cursor-pointer shadow-lg"
+                className="bg-white text-black hover:bg-neutral-100 font-semibold text-sm px-6 py-3 rounded-full transition-all font-sans cursor-pointer shadow-lg text-center"
               >
                 Explore Vaults
               </button>
               <button
                 onClick={() => setCurrentView("whitepaper")}
-                className="bg-[#24292e]/40 border border-white/10 hover:border-white/30 text-white font-semibold text-sm px-6 py-2.5 rounded-full transition-all font-sans cursor-pointer"
+                className="bg-[#24292e]/40 border border-white/10 hover:border-white/30 text-white font-semibold text-sm px-6 py-3 rounded-full transition-all font-sans cursor-pointer text-center"
               >
                 Read Whitepaper
               </button>
@@ -1329,7 +1329,7 @@ export default function App() {
         </div>
 
         {/* ANIMATED LOGO CLOUD SECTION */}
-        <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-b-[32px] py-6 px-8 relative z-10 flex flex-col md:flex-row items-center gap-6 justify-between">
+        <div className="bg-black/20 backdrop-blur-sm border border-[#7b39fc]/30 rounded-b-[32px] py-6 px-8 relative z-10 flex flex-col md:flex-row items-center gap-6 justify-between">
           <div className="flex items-center gap-4 shrink-0">
             <span className="text-neutral-400 text-xs font-bold uppercase tracking-widest font-sans">Powering the best teams</span>
             <div className="hidden md:block h-6 w-px bg-white/10" />
@@ -1380,9 +1380,9 @@ export default function App() {
               <div className="flex flex-col gap-4">
                 <span className="text-[13px] font-bold tracking-wider text-white uppercase font-sans">Community</span>
                 <div className="flex flex-col gap-2 font-sans text-sm">
-                  <a href="https://discord.gg/stellar" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Discord Server</a>
-                  <a href="https://t.me/stellar" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Telegram Group</a>
-                  <a href="https://whatsapp.com/channel/stellar" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">WhatsApp Channel</a>
+                  <a href="https://discord.gg/anchorvault" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Discord Server</a>
+                  <a href="https://t.me/Anchor_Vault" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Telegram Group</a>
+                  <a href="https://medium.com/@anchorvault" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Medium Publication</a>
                   <a href="https://stellar.org" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Stellar Ecosystem</a>
                 </div>
               </div>
@@ -1424,7 +1424,7 @@ export default function App() {
               <div className="flex items-center gap-3">
                 {[
                   { icon: GithubIcon, href: "https://github.com/shriyashsoni/anchorvault" },
-                  { icon: TwitterIcon, href: "https://x.com" },
+                  { icon: TwitterIcon, href: "https://x.com/Anchor_Vault" },
                   { icon: LinkedinIcon, href: "https://linkedin.com" },
                   { icon: InstagramIcon, href: "https://instagram.com" }
                 ].map((social, i) => (
