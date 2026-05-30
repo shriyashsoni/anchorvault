@@ -211,9 +211,17 @@ async function main() {
     vault:    './target/wasm32v1-none/release/anchor_vault.wasm',
   };
 
-  console.log("=== [1/4] STELLAR USDC TOKEN ===");
-  const usdcWasmHash = await uploadWasm(wasmPaths.usdc);
-  const usdcAddress  = await instantiateContract(usdcWasmHash, SALTS.usdc);
+  let usdcAddress;
+  if (network === 'mainnet') {
+    console.log("=== [1/4] STELLAR USDC TOKEN ===");
+    console.log("ℹ️ Running on MAINNET: Using official Circle USDC Stellar Asset Contract ID.");
+    usdcAddress = "CCW64C4U4VIV6C4B46O72O3Q554W6T6S5W6X6V256O64X6U6V6MI75";
+    console.log(`  🎉 USDC Contract ID: ${usdcAddress}\n`);
+  } else {
+    console.log("=== [1/4] STELLAR USDC TOKEN ===");
+    const usdcWasmHash = await uploadWasm(wasmPaths.usdc);
+    usdcAddress  = await instantiateContract(usdcWasmHash, SALTS.usdc);
+  }
 
   console.log("=== [2/4] ANCHOR REGISTRY ===");
   const registryWasmHash = await uploadWasm(wasmPaths.registry);
@@ -228,9 +236,9 @@ async function main() {
   const vaultAddress  = await instantiateContract(vaultWasmHash, SALTS.vault);
 
   console.log("=================================================");
-  console.log("🎉 ALL CONTRACTS DEPLOYED ON STELLAR TESTNET!");
-  console.log(`   USDC Token:       ${usdcAddress}`);
-  console.log(`   Anchor Registry:  ${registryAddress}`);
+  console.log(`🎉 ALL CONTRACTS DEPLOYED ON STELLAR ${network.toUpperCase()}!`);
+  console.log(`   USDC Token:        ${usdcAddress}`);
+  console.log(`   Anchor Registry:   ${registryAddress}`);
   console.log(`   Vault Share Token: ${tokenAddress}`);
   console.log(`   Corridor Vault:    ${vaultAddress}`);
   console.log("=================================================\n");

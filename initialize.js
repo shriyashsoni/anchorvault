@@ -108,11 +108,15 @@ async function main() {
   // 1. Stellar USDC Token — admin = deployer, so they can mint/mint to testers
   console.log("=== [1/4] STELLAR USDC TOKEN ===");
   console.log(`    Contract: ${usdcAddress}`);
-  await callContract("USDCToken", usdcAddress, "initialize", [
-    toAddressScVal(deployerKeypair.publicKey()),   // admin
-    xdr.ScVal.scvSymbol("USDC"),                  // name
-    xdr.ScVal.scvSymbol("USDC"),                  // symbol
-  ]);
+  if (usdcAddress === "CCW64C4U4VIV6C4B46O72O3Q554W6T6S5W6X6V256O64X6U6V6MI75") {
+    console.log("    ℹ️ Official Circle USDC detected. Skipping initialization call.");
+  } else {
+    await callContract("USDCToken", usdcAddress, "initialize", [
+      toAddressScVal(deployerKeypair.publicKey()),   // admin
+      xdr.ScVal.scvSymbol("USDC"),                  // name
+      xdr.ScVal.scvSymbol("USDC"),                  // symbol
+    ]);
+  }
 
   // 2. Vault Share Token — admin = Vault so it can mint/burn LP shares
   console.log("=== [2/4] VAULT SHARE TOKEN ===");
@@ -159,9 +163,11 @@ async function main() {
   for (const item of anchorsData) {
     const kp = Keypair.random();
     const address = kp.publicKey();
+    const secret = kp.secret();
     const limitScaled = BigInt(item.limit) * 10000000n; // 7 decimals scale for USDC/token credit limits
 
-    console.log(`    Registering anchor: ${item.name} (${address}) with credit limit: ${item.limit} USDC...`);
+    console.log(`    Registering anchor: ${item.name} (${address})`);
+    console.log(`    ⚠️  SAVE SECRET KEY FOR ${item.name.toUpperCase()}: ${secret}`);
     
     // Register in Registry
     await callContract(`AnchorRegistry -> Register:${item.name}`, registryAddress, "register_anchor", [
