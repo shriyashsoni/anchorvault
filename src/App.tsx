@@ -4,6 +4,7 @@ import {
   Wallet, 
   ArrowUpRight, 
   ArrowDownLeft, 
+  ArrowRight,
   Coins, 
   Activity, 
   Globe, 
@@ -72,6 +73,45 @@ const GithubIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   </svg>
 );
 
+const SUPPORTED_WALLETS = [
+  {
+    id: "freighter",
+    name: "Freighter",
+    description: "Official Stellar Extension",
+    icon: "https://stellar.creit.tech/wallet-icons/freighter.png",
+  },
+  {
+    id: "lobstr",
+    name: "LOBSTR",
+    description: "Secure Stellar Portal",
+    icon: "https://stellar.creit.tech/wallet-icons/lobstr.png",
+  },
+  {
+    id: "xbull",
+    name: "xBull",
+    description: "Power-User Wallet",
+    icon: "https://stellar.creit.tech/wallet-icons/xbull.png",
+  },
+  {
+    id: "albedo",
+    name: "Albedo",
+    description: "Web SEP Handshakes",
+    icon: "https://stellar.creit.tech/wallet-icons/albedo.png",
+  },
+  {
+    id: "hana",
+    name: "Hana Wallet",
+    description: "Multi-Chain Portal",
+    icon: "https://stellar.creit.tech/wallet-icons/hana.png",
+  },
+  {
+    id: "rabet",
+    name: "Rabet",
+    description: "Instant Extension",
+    icon: "https://stellar.creit.tech/wallet-icons/rabet.png",
+  },
+];
+
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState<"home" | "whitepaper" | "docs" | "privacy" | "terms">("home");
@@ -94,6 +134,25 @@ export default function App() {
       console.warn("StellarWalletsKit initialization error/warning:", err);
     }
   }, []);
+
+  const handleStellarWalletsKitConnect = async () => {
+    try {
+      setConnectingWallet(true);
+      setConnectionMessage("Opening Stellar Wallets Kit gateway...");
+      
+      const modalResult = await StellarWalletsKit.authModal();
+      if (modalResult && modalResult.address) {
+        setConnectedWalletName("Stellar Wallet");
+        setWalletAddress(modalResult.address);
+        setWalletConnected(true);
+        setSignUpStep(3);
+      }
+    } catch (err: any) {
+      console.error("Wallet kit connection failed:", err);
+    } finally {
+      setConnectingWallet(false);
+    }
+  };
 
   const connectDirectly = async (walletId: string) => {
     try {
@@ -2102,25 +2161,38 @@ export default function App() {
                     </button>
                   </div>
                 ) : (
-                  /* Step 1: Direct, secure Freighter Only connection */
-                  <div className="space-y-6 text-center py-4 flex flex-col items-center">
-                    <div className="h-16 w-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-2 shadow-md">
-                      <img src="https://stellar.creit.tech/wallet-icons/freighter.png" alt="Freighter Logo" className="h-full w-full object-contain" />
+                  /* Step 1: Compact Direct Wallet selection grid */
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-2 gap-3">
+                      {SUPPORTED_WALLETS.map((w) => (
+                        <button
+                          key={w.id}
+                          type="button"
+                          onClick={() => connectDirectly(w.id)}
+                          className="group relative overflow-hidden rounded-xl border border-white/5 bg-neutral-900/50 p-3 hover:border-purple-500/40 hover:bg-white/5 hover:shadow-md hover:shadow-purple-500/5 transition-all duration-300 text-left flex flex-col gap-2 cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <div className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center p-1 shrink-0 group-hover:scale-105 transition-transform duration-300">
+                              <img src={w.icon} alt={w.name} className="h-full w-full object-contain" />
+                            </div>
+                            <ArrowRight className="w-3.5 h-3.5 text-neutral-600 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all duration-300 shrink-0" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-white text-xs tracking-tight">{w.name}</h4>
+                            <p className="text-neutral-500 text-[9px] mt-0.5 font-light leading-snug">{w.description}</p>
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                    <div>
-                      <h4 className="text-white text-lg font-bold">Connect Freighter Wallet</h4>
-                      <p className="text-neutral-400 text-xs mt-1.5 leading-relaxed max-w-[280px] mx-auto">
-                        AnchorVault enforces a strictly trustless environment via the official, self-custodial Stellar Freighter browser extension.
-                      </p>
-                    </div>
-                    
+
+                    {/* WalletConnect & Other Modules Option */}
                     <button
                       type="button"
-                      onClick={() => connectDirectly("freighter")}
-                      className="w-full h-12 bg-gradient-to-r from-cyan-400 to-[#7b39fc] text-white font-semibold rounded-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md text-sm mt-2"
+                      onClick={handleStellarWalletsKitConnect}
+                      className="w-full h-11 relative group overflow-hidden rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2 cursor-pointer text-[10px] font-bold uppercase tracking-wider text-neutral-300"
                     >
-                      <Wallet className="w-4 h-4" />
-                      <span>Authorize with Freighter</span>
+                      <Globe className="w-3.5 h-3.5 text-purple-400" />
+                      <span>More Options / WalletConnect</span>
                     </button>
                   </div>
                 )}
