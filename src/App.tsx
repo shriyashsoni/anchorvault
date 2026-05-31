@@ -997,8 +997,8 @@ export default function App() {
           <div className="hidden lg:flex items-center gap-8">
             <button onClick={() => setCurrentView("home")} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Overview</button>
             <button onClick={() => setCurrentView("whitepaper")} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Whitepaper</button>
-            <button onClick={() => { setCurrentView("docs"); setDocsTab("getting-started"); }} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Docs</button>
-            <button onClick={() => { setCurrentView("docs"); setDocsTab("smart-contracts"); }} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Contracts</button>
+            <button onClick={() => window.open("http://localhost:3000", "_blank")} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1">Docs <ExternalLink className="h-3.5 w-3.5 opacity-60" /></button>
+            <button onClick={() => window.open("http://localhost:3000/smart-contracts", "_blank")} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1">Contracts <ExternalLink className="h-3.5 w-3.5 opacity-60" /></button>
           </div>
 
           {/* Action Buttons (Right, Desktop Only) */}
@@ -1041,8 +1041,8 @@ export default function App() {
           <div className="flex flex-col items-center justify-center flex-1 gap-8 text-center mt-10">
             <button onClick={() => { setMobileMenuOpen(false); setCurrentView("home"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Overview</button>
             <button onClick={() => { setMobileMenuOpen(false); setCurrentView("whitepaper"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Whitepaper</button>
-            <button onClick={() => { setMobileMenuOpen(false); setCurrentView("docs"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Docs</button>
-            <button onClick={() => { setMobileMenuOpen(false); setCurrentView("home"); setTimeout(() => document.getElementById("contracts")?.scrollIntoView({ behavior: 'smooth' }), 150); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Contracts</button>
+            <button onClick={() => { setMobileMenuOpen(false); window.open("http://localhost:3000", "_blank"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer flex items-center gap-2">Docs <ExternalLink className="h-5 w-5 opacity-60" /></button>
+            <button onClick={() => { setMobileMenuOpen(false); window.open("http://localhost:3000/smart-contracts", "_blank"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer flex items-center gap-2">Contracts <ExternalLink className="h-5 w-5 opacity-60" /></button>
             
             <div className="flex flex-col gap-4 w-full max-w-xs mt-8">
               <button 
@@ -1347,7 +1347,7 @@ export default function App() {
                 <div className="flex flex-col gap-2 font-sans text-sm">
                   <button onClick={() => { setCurrentView("home"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Overview</button>
                   <button onClick={() => { setCurrentView("whitepaper"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Whitepaper</button>
-                  <button onClick={() => { setCurrentView("docs"); setDocsTab("getting-started"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Documentation</button>
+                  <button onClick={() => window.open("http://localhost:3000", "_blank")} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer flex items-center gap-1.5">Documentation <ExternalLink className="h-3 w-3 opacity-60" /></button>
                   <button onClick={() => { setCurrentView("branding"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Branding Kit</button>
                 </div>
               </div>
@@ -1356,8 +1356,8 @@ export default function App() {
               <div className="flex flex-col gap-4">
                 <span className="text-[13px] font-bold tracking-wider text-white uppercase font-sans">Security & Legal</span>
                 <div className="flex flex-col gap-2 font-sans text-sm">
-                  <button onClick={() => { setCurrentView("docs"); setDocsTab("smart-contracts"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Smart Contracts</button>
-                  <button onClick={() => { setCurrentView("docs"); setDocsTab("accuracy-math"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Audit Reports</button>
+                  <button onClick={() => window.open("http://localhost:3000/smart-contracts", "_blank")} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer flex items-center gap-1.5">Smart Contracts <ExternalLink className="h-3 w-3 opacity-60" /></button>
+                  <button onClick={() => window.open("http://localhost:3000/accuracy-math", "_blank")} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer flex items-center gap-1.5">Audit Reports <ExternalLink className="h-3 w-3 opacity-60" /></button>
                   <button onClick={() => { setCurrentView("privacy"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Privacy Policy</button>
                   <button onClick={() => { setCurrentView("terms"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Terms of Use</button>
                 </div>
