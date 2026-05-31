@@ -23,6 +23,7 @@ import { StellarWalletsKit, Networks } from "@creit.tech/stellar-wallets-kit";
 import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
 import BionovaHero from "./components/BionovaHero";
 import FeaturesGrid from "./components/FeaturesGrid";
+import CustomDocsView from "./components/CustomDocsView";
 import {
   CONTRACT_ADDRESSES,
   fetchWalletBalances,
@@ -212,7 +213,7 @@ function InfiniteSlider() {
 
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<"home" | "whitepaper" | "privacy" | "terms" | "branding">("home");
+  const [currentView, setCurrentView] = useState<"home" | "whitepaper" | "privacy" | "terms" | "branding" | "docs">("home");
 
   // Newsletter Subscription states
   const [subscrEmail, setSubscrEmail] = useState("");
@@ -979,6 +980,10 @@ export default function App() {
     setShowSignUpModal(true);
   };
 
+  if (currentView === "docs") {
+    return <CustomDocsView onBackToHome={() => setCurrentView("home")} />;
+  }
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center overflow-x-hidden w-full font-sans antialiased">
       
@@ -996,8 +1001,8 @@ export default function App() {
           <div className="hidden lg:flex items-center gap-8">
             <button onClick={() => setCurrentView("home")} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Overview</button>
             <button onClick={() => setCurrentView("whitepaper")} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Whitepaper</button>
-            <a href="https://anchorvault.mintlify.app" target="_blank" rel="noreferrer" className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Docs</a>
-            <a href="https://anchorvault.mintlify.app/contracts/overview" target="_blank" rel="noreferrer" className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Contracts</a>
+            <button onClick={() => { setCurrentView("docs"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Docs</button>
+            <button onClick={() => { setCurrentView("docs"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-sm text-white font-medium hover:opacity-80 transition-opacity cursor-pointer">Contracts</button>
           </div>
 
           {/* Action Buttons (Right, Desktop Only) */}
@@ -1040,8 +1045,8 @@ export default function App() {
           <div className="flex flex-col items-center justify-center flex-1 gap-8 text-center mt-10">
             <button onClick={() => { setMobileMenuOpen(false); setCurrentView("home"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Overview</button>
             <button onClick={() => { setMobileMenuOpen(false); setCurrentView("whitepaper"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Whitepaper</button>
-            <a href="https://anchorvault.mintlify.app" target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Docs</a>
-            <a href="https://anchorvault.mintlify.app/contracts/overview" target="_blank" rel="noreferrer" onClick={() => setMobileMenuOpen(false)} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Contracts</a>
+            <button onClick={() => { setMobileMenuOpen(false); setCurrentView("docs"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Docs</button>
+            <button onClick={() => { setMobileMenuOpen(false); setCurrentView("docs"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Contracts</button>
             
             <div className="flex flex-col gap-4 w-full max-w-xs mt-8">
               <button 
@@ -1121,7 +1126,7 @@ export default function App() {
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className="w-full mt-24 mb-16"
         >
-          <FeaturesGrid onNavigate={() => window.open("https://anchorvault.mintlify.app/contracts/overview", "_blank")} />
+          <FeaturesGrid onNavigate={() => { setCurrentView("docs"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
         </motion.div>
 
         {/* BIONOVA HERO SECTION */}
@@ -1345,7 +1350,7 @@ export default function App() {
                 <div className="flex flex-col gap-2 font-sans text-sm">
                   <button onClick={() => { setCurrentView("home"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Overview</button>
                   <button onClick={() => { setCurrentView("whitepaper"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Whitepaper</button>
-                  <a href="https://anchorvault.mintlify.app" target="_blank" rel="noreferrer" className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Documentation</a>
+                  <button onClick={() => { setCurrentView("docs"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Documentation</button>
                   <button onClick={() => { setCurrentView("branding"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Branding Kit</button>
                 </div>
               </div>
@@ -1354,8 +1359,8 @@ export default function App() {
               <div className="flex flex-col gap-4">
                 <span className="text-[13px] font-bold tracking-wider text-white uppercase font-sans">Security & Legal</span>
                 <div className="flex flex-col gap-2 font-sans text-sm">
-                  <a href="https://anchorvault.mintlify.app/contracts/overview" target="_blank" rel="noreferrer" className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Smart Contracts</a>
-                  <a href="https://anchorvault.mintlify.app/api-reference/introduction" target="_blank" rel="noreferrer" className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">API Reference</a>
+                  <button onClick={() => { setCurrentView("docs"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Smart Contracts</button>
+                  <button onClick={() => { setCurrentView("docs"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">API Reference</button>
                   <button onClick={() => { setCurrentView("privacy"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Privacy Policy</button>
                   <button onClick={() => { setCurrentView("terms"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Terms of Use</button>
                 </div>
