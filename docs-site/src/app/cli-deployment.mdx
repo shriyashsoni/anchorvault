@@ -1,0 +1,78 @@
+# CLI Implementation & Deploy
+
+Follow this comprehensive terminal guide to build, size-optimize, deploy, and initialize the AnchorVault smart contract suite to the Stellar Testnet using standard developer packages and command line utilities.
+
+---
+
+## Step 1: Compile Smart Contracts
+
+Compile the modular Rust contract crates into target-independent WebAssembly (WASM) modules:
+
+```bash
+# 1. Compile all contracts targetting standard 32-bit WASM
+cargo build --target wasm32-unknown-unknown --release
+
+# 2. Verify compilation output is present
+ls target/wasm32-unknown-unknown/release/*.wasm
+```
+
+---
+
+## Step 2: Optimize WASM Binary Footprint
+
+To stay strictly within Soroban's transaction and ledger byte size limits, you **MUST** optimize the WASM bytecode using the Stellar CLI:
+
+```bash
+# Optimize CoreVault WASM size (compresses and strips unnecessary symbols)
+stellar contract optimize --wasm target/wasm32-unknown-unknown/release/anchor_vault.wasm
+
+# Verify the optimized module size (typically reduces file size by ~70%)
+ls -lh target/wasm32-unknown-unknown/release/anchor_vault.optimized.wasm
+```
+
+---
+
+## Step 3: Deploy Contracts to Stellar Testnet
+
+Deploy the optimized WASM files to the live Soroban consensus host. Ensure your deployer key identity is registered and fully funded:
+
+```bash
+# Deploy the optimized CoreVault WASM to Testnet
+stellar contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/anchor_vault.optimized.wasm \
+  --source admin_deployer_identity \
+  --network testnet
+```
+
+> 📝 **Note:** Save the returned 56-character alphanumeric address (e.g., `CCU3RFCKEG...`). You will need this address to initialize variables and configure client frontends.
+
+---
+
+## Step 4: Parameter Initialization
+
+After deployment, link dynamic contract state variables—such as the admin multisig and target stablecoin address—to completely bind and lock the system:
+
+```bash
+# Invoke contract 'initialize' function on-chain
+stellar contract invoke \
+  --id CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK \
+  --source admin_deployer_identity \
+  --network testnet \
+  -- \
+  initialize \
+  --admin GDSKOPENSOURCEKITCORRIDOR72DX3DQNJDJINT66 \
+  --asset CCW67CUUZD4BYLOXPUM6UJCY34UCCIC2CC3V2F
+```
+
+---
+
+## Step 5: Verify Contract Ledger Keys
+
+You can query current storage parameters standardly to ensure variables are correctly persisted in `StorageType::Instance`:
+
+```bash
+# Inspect instance storage bindings directly
+stellar contract read \
+  --id CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK \
+  --network testnet
+```

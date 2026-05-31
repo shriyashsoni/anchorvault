@@ -1,0 +1,59 @@
+import { Cards } from 'nextra/components'
+
+# Introduction to AnchorVault
+
+Welcome to the official developer documentation portal for **AnchorVault**—a decentralized, non-custodial yield routing engine deployed securely on the **Stellar Soroban network**. 
+
+AnchorVault matches liquidity reserves (such as USDC and EURC stablecoins) with local cross-border Cash-In/Cash-Out (CICO) remittance gateways, routing organic yield to liquidity providers in real-time with absolute precision and security.
+
+⚓ [Explore the AnchorVault GitHub repository](https://github.com/shriyashsoni/anchorvault)
+
+---
+
+## Technical Highlights
+
+To guarantee high performance and absolute reliability, AnchorVault leverages several state-of-the-art Web3 architectural paradigms:
+
+*   **Deterministic Execution:** Deployed on Soroban's sandboxed WASM runtime, guaranteeing predictable gas constraints and instant settlement.
+*   **High Precision SafeMath:** All calculations scale to **7 decimal places ($10^7$ scaling factor)** using strictchecked math wrappers in Rust to block integer overflow vectors.
+*   **Non-Custodial Escrows:** Programmatic dispute arbitrate hooks protect liquidity providers against anchor remittance failures.
+
+---
+
+## Quick Start Documentation Tracks
+
+Select a core development track to learn more about our on-chain pipeline:
+
+<Cards>
+  <Cards.Card title="Smart Contracts Deep-Dive" href="/smart-contracts" arrow>
+    Learn about CoreVault, AnchorRegistry, storage schemas, and gas optimizations.
+  </Cards.Card>
+  <Cards.Card title="SDK & Integration" href="/sdk-integration" arrow>
+    Connect Freighter Wallet, build Soroban transactions, and sign inputs in JS/TS.
+  </Cards.Card>
+  <Cards.Card title="CLI Implementation" href="/cli-deployment" arrow>
+    Compile Rust crates, optimize WASM files, deploy, and initialize contract variables.
+  </Cards.Card>
+  <Cards.Card title="Mathematics & Accuracy" href="/accuracy-math" arrow>
+    Verify share allocations, Dynamic LP calculations, and rounding attack mitigations.
+  </Cards.Card>
+</Cards>
+
+---
+
+## Frequently Asked Questions (FAQ)
+
+<details>
+  <summary>How does the automated dispute slash mechanism protect pool capital?</summary>
+  To register a cross-border cash-out corridor, off-ramp gateways must lock a minimum reputational bond of **10,000 USDC** inside the `AnchorRegistry` contract. If a gateway defaults on a merchant's remittance payment, their locked stakes are liquidated immediately to refund the pool and the merchant.
+</details>
+
+<details>
+  <summary>Can I interact with AnchorVault contracts using custom TypeScript wrappers?</summary>
+  Yes, absolutely! Since the contracts are deployed standardly on the Stellar Soroban network, you can use the official `@stellar/stellar-sdk` library to request ledger states, invoke functions, query RPC endpoints, and submit Freighter-signed transactions.
+</details>
+
+<details>
+  <summary>Can I customize the visual style or implement Tailwind CSS?</summary>
+  Yes. Nextra and the underlying Next.js App Router support custom CSS, Tailwind configs, and Google Fonts optimization standardly out-of-the-box.
+</details>
