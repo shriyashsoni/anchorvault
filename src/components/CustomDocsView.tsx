@@ -30,6 +30,23 @@ export default function CustomDocsView({ onBackToHome }: CustomDocsViewProps) {
   const [expandedAccordions, setExpandedAccordions] = useState<Record<string, boolean>>({});
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [stars, setStars] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("https://api.github.com/repos/shriyashsoni/anchorvault")
+      .then(res => {
+        if (!res.ok) throw new Error("Private or offline");
+        return res.json();
+      })
+      .then(data => {
+        if (data && typeof data.stargazers_count === 'number') {
+          setStars(data.stargazers_count);
+        }
+      })
+      .catch(() => {
+        setStars(0);
+      });
+  }, []);
 
   // Group pages by category
   const categories = useMemo(() => {
@@ -111,9 +128,11 @@ export default function CustomDocsView({ onBackToHome }: CustomDocsViewProps) {
           >
             <GithubIcon size={16} />
             <span>GitHub</span>
-            <span className="text-[11px] px-1.5 py-0.5 rounded-md bg-white/10 font-semibold text-white/80 font-mono">
-              ★ 142
-            </span>
+            {stars !== null && (
+              <span className="text-[11px] px-1.5 py-0.5 rounded-md bg-white/10 font-semibold text-white/80 font-mono">
+                ★ {stars}
+              </span>
+            )}
           </a>
 
           <button 

@@ -479,7 +479,7 @@ export const DOCS_PAGES: DocPage[] = [
           title: "Library Initialization",
           codeBlock: {
             language: "typescript",
-            code: "import { AnchorVaultClient } from '@anchorvault/sdk';\nimport { Server } from '@stellar/stellar-sdk';\n\nconst rpcServer = new Server('https://soroban-testnet.stellar.org');\nconst vaultClient = new AnchorVaultClient({\n  contractId: 'CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK',\n  server: rpcServer\n});"
+            code: "import { AnchorVaultClient } from '@anchorvault/sdk';\nimport { Server } from '@stellar/stellar-sdk';\n\nconst rpcServer = new Server('https://soroban-testnet.stellar.org');\nconst vaultClient = new AnchorVaultClient({\n  contractId: 'CCMPSOA53VUZFU74YN5SYMV6YGYO45CORMWPMND5DKF3XZJ7C4R54P7E',\n  server: rpcServer\n});"
           }
         }
       ]
@@ -678,7 +678,7 @@ export const DOCS_PAGES: DocPage[] = [
           title: "Stellar CLI Registration",
           codeBlock: {
             language: "bash",
-            code: "stellar contract invoke \\\n  --id CAWO6A52CISR4JITVFVN4NDDCSJA3MI5N6XCBN5XW2AE4JU3I4NHAUGJ \\\n  --source admin_identity \\\n  --network testnet \\\n  -- \\\n  register_anchor \\\n  --anchor GD67CUUZD4BYLOXPUM6UJCY34UCCIC2CC3V2F \\\n  --limit 1500000000000"
+            code: "stellar contract invoke \\\n  --id CC2C5V3L3MMK6H3T3LBNJ2ALQHVWXVV4FRQY5BPCO4BCL2EFQFOGTPXN \\\n  --source admin_identity \\\n  --network testnet \\\n  -- \\\n  register_anchor \\\n  --anchor GBF4PJKVXGAIDZCYBEGNHAODE4BM3RHIN3EZMS3XHPRHCLPT2JNZPME6 \\\n  --limit 1500000000000"
           },
           tipCallout: {
             title: "Scaling Coordinates",
