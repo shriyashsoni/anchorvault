@@ -6,7 +6,11 @@ import {
 
 
 
-const FeaturesGrid: React.FC = () => {
+interface FeaturesGridProps {
+  onNavigate?: () => void;
+}
+
+const FeaturesGrid: React.FC<FeaturesGridProps> = ({ onNavigate }) => {
   const row1Icons = [Coins, Wallet, Globe, Activity, TrendingUp, RefreshCw, Box, Layers];
   const row2Icons = [Activity, Box, TrendingUp, Layers, Coins, Wallet, Globe, RefreshCw];
 
@@ -126,7 +130,7 @@ const FeaturesGrid: React.FC = () => {
 
           {/* Bottom - Reach Me */}
           <div 
-            onClick={() => window.open("https://anchorvault.xyz/docs/smart-contracts", "_blank")}
+            onClick={() => onNavigate ? onNavigate() : undefined}
             className="rounded-2xl bg-[#1e3a8a]/40 border border-blue-500/20 hover:border-blue-500/40 p-5 md:p-6 noise-overlay relative overflow-hidden flex flex-col shadow-lg shadow-blue-500/10 cursor-pointer transition-all group"
           >
             <div className="relative z-10 flex items-center justify-start gap-3 mb-6">
