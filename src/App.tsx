@@ -17,7 +17,7 @@ import {
   Loader2,
   Mail
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import Hls from "hls.js";
 import { StellarWalletsKit, Networks } from "@creit.tech/stellar-wallets-kit";
 import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
@@ -212,7 +212,7 @@ function InfiniteSlider() {
 
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<"home" | "whitepaper" | "docs" | "privacy" | "terms">("home");
+  const [currentView, setCurrentView] = useState<"home" | "whitepaper" | "docs" | "privacy" | "terms" | "branding">("home");
   const [docsTab, setDocsTab] = useState("getting-started");
 
   // Newsletter Subscription states
@@ -1217,6 +1217,7 @@ export default function App() {
       {currentView === "docs" && <DocsView activeTab={docsTab} setActiveTab={setDocsTab} />}
       {currentView === "privacy" && <PrivacyView />}
       {currentView === "terms" && <TermsView />}
+      {currentView === "branding" && <BrandingView />}
 
 
       {/* GORGEOUS LIQUID "START YOUR JOURNEY" NEWSLETTER CTA SECTION */}
@@ -1347,6 +1348,7 @@ export default function App() {
                   <button onClick={() => { setCurrentView("home"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Overview</button>
                   <button onClick={() => { setCurrentView("whitepaper"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Whitepaper</button>
                   <button onClick={() => { setCurrentView("docs"); setDocsTab("getting-started"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Documentation</button>
+                  <button onClick={() => { setCurrentView("branding"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer">Branding Kit</button>
                 </div>
               </div>
 
@@ -2691,7 +2693,8 @@ interface DocsViewProps {
 }
 
 function DocsView({ activeTab, setActiveTab }: DocsViewProps) {
-  const [codeTab, setCodeTab] = useState("rust");
+  const [codeTab, setCodeTab] = useState("typescript");
+  const [sdkTab, setSdkTab] = useState("freighter");
 
   const docCategories = [
     { id: "getting-started", label: "Getting Started" },
@@ -2711,320 +2714,628 @@ function DocsView({ activeTab, setActiveTab }: DocsViewProps) {
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         {/* Docs Sidebar */}
-        <div className="lg:col-span-3 h-fit flex flex-col gap-6 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md sticky top-28">
-          <span className="text-xs font-semibold uppercase tracking-wider text-purple-400">Documentation</span>
+        <div className="lg:col-span-3 h-fit flex flex-col gap-6 bg-[#0c0c0e] border border-white/5 rounded-2xl p-6 backdrop-blur-md sticky top-28 z-10">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-purple-400">AnchorVault System</span>
+            <h2 className="text-xl font-bold tracking-tight text-white uppercase font-sans">Developer Portal</h2>
+          </div>
+          <div className="h-px bg-white/5 w-full" />
           <div className="flex flex-col gap-1.5">
             {docCategories.map(cat => (
               <button
                 key={cat.id}
                 onClick={() => setActiveTab(cat.id)}
-                className={`text-sm text-left py-2 px-3 rounded-lg transition-all cursor-pointer ${
-                  activeTab === cat.id ? "bg-[#7b39fc]/20 text-[#c29eff] border border-[#7b39fc]/40 font-semibold" : "text-neutral-400 hover:text-white hover:bg-white/5"
+                className={`text-sm text-left py-2.5 px-3.5 rounded-xl transition-all cursor-pointer border ${
+                  activeTab === cat.id 
+                    ? "bg-[#7b39fc]/10 text-purple-300 border-[#7b39fc]/30 font-semibold shadow-md shadow-[#7b39fc]/5" 
+                    : "text-neutral-400 hover:text-white border-transparent hover:bg-white/5"
                 }`}
               >
                 {cat.label}
               </button>
             ))}
           </div>
-          <div className="h-px bg-white/10 w-full" />
-          <div className="flex items-center gap-2 text-xs text-neutral-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-            <span>Soroban Core v2.0 Docs</span>
+          <div className="h-px bg-white/5 w-full" />
+          <div className="flex items-center gap-2.5 text-xs text-neutral-400">
+            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="font-mono text-[10px] tracking-wider uppercase text-neutral-500">Soroban Core v2.0 Deployed</span>
           </div>
         </div>
 
         {/* Docs Main Panel */}
-        <div className="lg:col-span-9 flex flex-col gap-8 min-h-[60vh]">
+        <div className="lg:col-span-9 flex flex-col gap-8 min-h-[60vh] pb-24">
+          
+          {/* 1. GETTING STARTED */}
           {activeTab === "getting-started" && (
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300"
             >
-              <h1 className="font-instrument text-4xl text-white tracking-tight">Introduction to Soroban Corridors</h1>
-              <p>
-                Welcome to the AnchorVault developer portal! Deployed securely on the <strong>Stellar Soroban network</strong>, AnchorVault is a decentralized yield routing engine that matches stablecoins with local Stellar cash-in/cash-out gateways.
-              </p>
-              <p>
-                By building on Soroban, we utilize a deterministic, sandboxed WASM environment that ensures zero-slippage transactions, absolute gas constraints, and immediate on-chain settlement hooks.
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold text-purple-400 uppercase tracking-widest font-sans">Welcome to next-gen Stellar DeFi</span>
+                <h1 className="font-instrument text-4xl lg:text-5xl text-white tracking-tight leading-none">Introduction to Soroban Corridors</h1>
+              </div>
+              <p className="text-neutral-400 text-lg leading-relaxed font-sans">
+                AnchorVault is a high-performance, non-custodial yield-routing engine deployed securely on the **Stellar Soroban network**. It matches decentralized stablecoin reserves (USDC/EURC) with registered cross-border anchors to power transaction corridors, while routing organic yield to liquidity providers in real-time.
               </p>
               
-              <h3 className="text-lg font-semibold text-white mt-4 tracking-tight">Prerequisites</h3>
-              <p>
-                To interact with AnchorVault smart contracts locally, ensure you have the following installed:
-              </p>
-              <ul className="list-disc pl-6 flex flex-col gap-2">
-                <li>Rust toolchain (v1.78.0+) with <code>wasm32-unknown-unknown</code> target.</li>
-                <li>Stellar CLI tool (<code>cargo install --locked stellar-cli --version 21.0.0</code>).</li>
-                <li>Freighter Wallet Chrome extension for frontend authorization.</li>
+              <div className="h-px bg-white/10 w-full my-2" />
+
+              <h3 className="text-xl font-semibold text-white tracking-tight font-instrument">Quick Start Themes</h3>
+              <p className="text-sm text-neutral-400 -mt-3 font-sans">Select a core protocol category to start integrating with our Soroban smart contract pipeline.</p>
+              
+              {/* High-fidelity imitation Cards grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 font-sans">
+                <div 
+                  onClick={() => setActiveTab("smart-contracts")}
+                  className="bg-[#0c0c0e] border border-white/5 hover:border-purple-500/30 rounded-2xl p-6 cursor-pointer flex flex-col gap-3 group transition-all hover:-translate-y-1"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-purple-400 uppercase tracking-widest">Smart Contracts</span>
+                    <span className="text-neutral-500 group-hover:text-purple-300 group-hover:translate-x-1 transition-all">➔</span>
+                  </div>
+                  <h4 className="font-bold text-white text-base">Core Engine Deep-Dive</h4>
+                  <p className="text-xs text-neutral-400 leading-normal font-light">
+                    Review CoreVault storage models, registration logic, and public contract function architectures.
+                  </p>
+                </div>
+
+                <div 
+                  onClick={() => setActiveTab("sdk-integration")}
+                  className="bg-[#0c0c0e] border border-white/5 hover:border-cyan-500/30 rounded-2xl p-6 cursor-pointer flex flex-col gap-3 group transition-all hover:-translate-y-1"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-cyan-400 uppercase tracking-widest">Web3 SDK</span>
+                    <span className="text-neutral-500 group-hover:text-cyan-300 group-hover:translate-x-1 transition-all">➔</span>
+                  </div>
+                  <h4 className="font-bold text-white text-base">JS & TS SDK Integration</h4>
+                  <p className="text-xs text-neutral-400 leading-normal font-light">
+                    Learn how to connect Freighter Wallet, build Soroban transactions, and handle client-side exceptions.
+                  </p>
+                </div>
+              </div>
+
+              <h3 className="text-xl font-semibold text-white tracking-tight font-instrument mt-6">Protocol FAQ</h3>
+              <p className="text-sm text-neutral-400 -mt-3 font-sans">Common questions regarding AnchorVault integrations, sandboxed environment models, and custom CSS setups.</p>
+              
+              {/* Premium FAQ Dropdowns */}
+              <div className="flex flex-col gap-3 mt-2 font-sans">
+                <details className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-5 cursor-pointer hover:border-white/10 transition-all group">
+                  <summary className="font-semibold text-white flex items-center justify-between outline-none list-none">
+                    <span className="text-sm sm:text-base">Can I interact with AnchorVault using standard Stellar SDKs?</span>
+                    <span className="text-purple-400 group-open:rotate-180 transition-transform duration-200 font-mono text-xs">▼</span>
+                  </summary>
+                  <div className="mt-3 text-xs sm:text-sm text-neutral-400 font-light leading-relaxed border-t border-white/5 pt-3">
+                    Yes, absolutely! AnchorVault is 100% compliant with standard Web3 protocols. You can use the official `@stellar/stellar-sdk` library to fetch ledger state, invoke contract functions, query RPC endpoints, and submit signed transactions.
+                  </div>
+                </details>
+
+                <details className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-5 cursor-pointer hover:border-white/10 transition-all group">
+                  <summary className="font-semibold text-white flex items-center justify-between outline-none list-none">
+                    <span className="text-sm sm:text-base">Can I customize AnchorVault styles or utilize Tailwind CSS?</span>
+                    <span className="text-purple-400 group-open:rotate-180 transition-transform duration-200 font-mono text-xs">▼</span>
+                  </summary>
+                  <div className="mt-3 text-xs sm:text-sm text-neutral-400 font-light leading-relaxed border-t border-white/5 pt-3">
+                    Yes. Since AnchorVault's interface is built on a highly-customizable React architecture, you can override any aesthetic variables in `src/index.css` or integrate custom utility tags. All cards, buttons, and glassmorphism backdrops use flexible responsive design models.
+                  </div>
+                </details>
+
+                <details className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-5 cursor-pointer hover:border-white/10 transition-all group">
+                  <summary className="font-semibold text-white flex items-center justify-between outline-none list-none">
+                    <span className="text-sm sm:text-base">How does the automatic Dispute Arbitrage protect liquidity providers?</span>
+                    <span className="text-purple-400 group-open:rotate-180 transition-transform duration-200 font-mono text-xs">▼</span>
+                  </summary>
+                  <div className="mt-3 text-xs sm:text-sm text-neutral-400 font-light leading-relaxed border-t border-white/5 pt-3">
+                    To maintain absolute trust, remittance off-ramp anchors must register on-chain and lock a reputation bond in the `AnchorRegistry` contract. If an anchor defaults on a cross-border payment corridor, their locked stakes are liquidated immediately to refund the pool and affected merchants directly.
+                  </div>
+                </details>
+              </div>
+
+              <h3 className="text-xl font-semibold text-white tracking-tight font-instrument mt-6">Developer Setup Prerequisites</h3>
+              <p className="text-sm text-neutral-400 -mt-3 font-sans">Ensure your local developer workspace meets the following minimum versions:</p>
+              <ul className="list-disc pl-6 flex flex-col gap-2.5 text-sm text-neutral-400 font-sans">
+                <li><strong>Rust Toolchain:</strong> `v1.78.0+` with the `wasm32-unknown-unknown` target configured.</li>
+                <li><strong>Stellar CLI:</strong> Version `21.0.0+` for ledger interaction, key management, and contract optimization.</li>
+                <li><strong>Browser Extension:</strong> `Freighter Wallet` or standard Stellar browser wallet to sign client-side inputs.</li>
               </ul>
             </motion.div>
           )}
 
+          {/* 2. SMART CONTRACTS DEEP-DIVE */}
           {activeTab === "smart-contracts" && (
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
-              className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300"
+              className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300 font-sans"
             >
-              <h1 className="font-instrument text-4xl text-white tracking-tight">Deployed Smart Contracts</h1>
-              <p>
-                AnchorVault deploys isolated contract modules to optimize gas consumption, scale staking security pools, and manage automated gateways:
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold text-purple-400 uppercase tracking-widest font-sans">Smart Contract Architecture</span>
+                <h1 className="font-instrument text-4xl lg:text-5xl text-white tracking-tight leading-none">Deployed Smart Contracts</h1>
+              </div>
+              <p className="text-neutral-400">
+                AnchorVault segregates core vault operations from gateway reputation staking. This keeps execution clean, minimizes WASM byte size limits, and ensures dynamic modularity across the system.
               </p>
-              
-              <div className="flex flex-col gap-6 mt-2">
-                <div className="border border-white/10 rounded-xl bg-white/5 p-5 flex flex-col gap-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-white text-base">CoreVault Engine</span>
-                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-mono uppercase">Vault Module</span>
-                  </div>
-                  <span className="text-xs font-mono select-all text-neutral-400 break-all bg-black/40 p-2.5 rounded-lg border border-white/5">CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK</span>
-                  
-                  <div className="flex flex-col gap-2">
-                    <span className="text-sm font-semibold text-white">State Keys & Storage Structures</span>
-                    <p className="text-xs text-neutral-400">
-                      Uses <code>StorageType::Instance</code> to persist:
-                    </p>
-                    <ul className="list-disc pl-6 text-xs text-neutral-400 flex flex-col gap-1">
-                      <li><code>Admin</code>: Address of the vault deployer authorized to configure oracles.</li>
-                      <li><code>AssetToken</code>: Address of the primary USDC/EURC contract interface.</li>
-                      <li><code>TotalShares</code>: Sum of all active LP shares minted to providers.</li>
-                      <li><code>TotalDeposits</code>: Dynamic balance ledger reflecting physical vault reserves.</li>
-                    </ul>
-                  </div>
 
-                  <div className="flex flex-col gap-2">
-                    <span className="text-sm font-semibold text-white">Public Contract Functions</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div className="bg-black/20 p-3 rounded-lg">
-                        <code className="text-purple-300">initialize(admin: Address, asset: Address)</code>
-                        <p className="text-neutral-400 mt-1 text-[11px]">Binds deployer permissions and sets up primary token registers.</p>
-                      </div>
-                      <div className="bg-black/20 p-3 rounded-lg">
-                        <code className="text-purple-300">{"deposit(user: Address, amount: i128) -> i128"}</code>
-                        <p className="text-neutral-400 mt-1 text-[11px]">Transfers USDC into reserves and issues calculated LP shares.</p>
-                      </div>
-                      <div className="bg-black/20 p-3 rounded-lg">
-                        <code className="text-purple-300">{"withdraw(user: Address, shares: i128) -> i128"}</code>
-                        <p className="text-neutral-400 mt-1 text-[11px]">Redeems LP shares and returns USDC with accrued corridor yield.</p>
-                      </div>
-                      <div className="bg-black/20 p-3 rounded-lg">
-                        <code className="text-purple-300">distribute_yield(amount: i128)</code>
-                        <p className="text-neutral-400 mt-1 text-[11px]">Directly inflates share values via audited corridor commissions.</p>
-                      </div>
+              {/* CoreVault Engine */}
+              <div className="border border-white/5 rounded-2xl bg-[#0c0c0e] p-6 flex flex-col gap-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-3 w-3 rounded-full bg-purple-500" />
+                    <span className="font-bold text-white text-lg">CoreVault Engine</span>
+                  </div>
+                  <span className="text-[10px] bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full font-semibold font-mono uppercase tracking-wider w-fit">Vault Module</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Testnet Address</span>
+                  <span className="text-xs font-mono select-all text-neutral-300 break-all bg-black/40 p-3 rounded-lg border border-white/5">CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK</span>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <span className="text-sm font-semibold text-white">Storage Structure (`StorageType::Instance`)</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="bg-black/20 p-3.5 rounded-xl border border-white/5">
+                      <code className="text-purple-300 font-mono">Admin: Address</code>
+                      <p className="text-neutral-400 mt-1 font-sans">Address authorized to adjust interest limits and update whitelists.</p>
+                    </div>
+                    <div className="bg-black/20 p-3.5 rounded-xl border border-white/5">
+                      <code className="text-purple-300 font-mono">AssetToken: Address</code>
+                      <p className="text-neutral-400 mt-1 font-sans">Cryptographic binding address of the official backing stablecoin (USDC).</p>
+                    </div>
+                    <div className="bg-black/20 p-3.5 rounded-xl border border-white/5">
+                      <code className="text-purple-300 font-mono">TotalShares: i128</code>
+                      <p className="text-neutral-400 mt-1 font-sans">Dynamically tracks all active liquidity shares minted to providers.</p>
+                    </div>
+                    <div className="bg-black/20 p-3.5 rounded-xl border border-white/5">
+                      <code className="text-purple-300 font-mono">TotalDeposits: i128</code>
+                      <p className="text-neutral-400 mt-1 font-sans">Dynamic reserve calculation indicating current physical vault reserves.</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="border border-white/10 rounded-xl bg-white/5 p-5 flex flex-col gap-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-white text-base">AnchorRegistry</span>
-                    <span className="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded font-mono uppercase">Registry Module</span>
+                {/* CoreVault Functions Table */}
+                <div className="flex flex-col gap-3">
+                  <span className="text-sm font-semibold text-white">Public Execution Interfaces</span>
+                  <div className="overflow-x-auto border border-white/5 rounded-xl">
+                    <table className="min-w-full text-left border-collapse text-xs text-neutral-400 font-sans">
+                      <thead>
+                        <tr className="bg-white/5 text-white border-b border-white/10">
+                          <th className="p-3.5 font-semibold">Function Signature</th>
+                          <th className="p-3.5 font-semibold">Description</th>
+                          <th className="p-3.5 font-semibold">Gas Metric</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        <tr>
+                          <td className="p-3.5 font-mono text-purple-300">initialize(admin: Address, asset: Address)</td>
+                          <td className="p-3.5">Initializes deployer credentials and sets token backing models.</td>
+                          <td className="p-3.5 font-mono text-neutral-500">Low (One-time)</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3.5 font-mono text-purple-300">deposit(user: Address, amount: i128) -&gt; i128</td>
+                          <td className="p-3.5">Locks stablecoin capital and returns freshly minted LP shares.</td>
+                          <td className="p-3.5 font-mono text-neutral-500">Medium (State write)</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3.5 font-mono text-purple-300">withdraw(user: Address, shares: i128) -&gt; i128</td>
+                          <td className="p-3.5">Burns LP shares and redeems equivalent stablecoins plus dynamic yield.</td>
+                          <td className="p-3.5 font-mono text-neutral-500">Medium (State write)</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3.5 font-mono text-purple-300">distribute_yield(amount: i128)</td>
+                          <td className="p-3.5">Directly injects yield generated by corridor anchors back to LPs.</td>
+                          <td className="p-3.5 font-mono text-neutral-500">Low (Balance shift)</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                  <span className="text-xs font-mono select-all text-neutral-400 break-all bg-black/40 p-2.5 rounded-lg border border-white/5">CAWO6A52CISR4JITVFVN4NDDCSJA3MI5N6XCBN5XW2AE4JU3I4NHAUGJ</span>
+                </div>
+              </div>
 
-                  <div className="flex flex-col gap-2">
-                    <span className="text-sm font-semibold text-white">Public Contract Functions</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div className="bg-black/20 p-3 rounded-lg">
-                        <code className="text-cyan-300">register_anchor(anchor: Address, bond: i128)</code>
-                        <p className="text-neutral-400 mt-1 text-[11px]">Registers regulated Stellar gateways and locks reputation stakes.</p>
-                      </div>
-                      <div className="bg-black/20 p-3 rounded-lg">
-                        <code className="text-cyan-300">flag_dispute(merchant: Address, proof: BytesN&lt;32&gt;)</code>
-                        <p className="text-neutral-400 mt-1 text-[11px]">Triggers a 72-hour interactive dispute window against an anchor.</p>
-                      </div>
-                      <div className="bg-black/20 p-3 rounded-lg">
-                        <code className="text-cyan-300">resolve_dispute(dispute_id: u64, proof: BytesN&lt;32&gt;)</code>
-                        <p className="text-neutral-400 mt-1 text-[11px]">Allows anchor to clear dispute flags using cryptographic signature receipts.</p>
-                      </div>
-                      <div className="bg-black/20 p-3 rounded-lg">
-                        <code className="text-cyan-300">liquidate_anchor(dispute_id: u64)</code>
-                        <p className="text-neutral-400 mt-1 text-[11px]">Automated trigger to slash staked bonds and refund the merchant.</p>
-                      </div>
-                    </div>
+              {/* AnchorRegistry */}
+              <div className="border border-white/5 rounded-2xl bg-[#0c0c0e] p-6 flex flex-col gap-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-3 w-3 rounded-full bg-cyan-500" />
+                    <span className="font-bold text-white text-lg">AnchorRegistry</span>
+                  </div>
+                  <span className="text-[10px] bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full font-semibold font-mono uppercase tracking-wider w-fit">Registry Module</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Testnet Address</span>
+                  <span className="text-xs font-mono select-all text-neutral-300 break-all bg-black/40 p-3 rounded-lg border border-white/5">CAWO6A52CISR4JITVFVN4NDDCSJA3MI5N6XCBN5XW2AE4JU3I4NHAUGJ</span>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <span className="text-sm font-semibold text-white">Public Execution Interfaces</span>
+                  <div className="overflow-x-auto border border-white/5 rounded-xl">
+                    <table className="min-w-full text-left border-collapse text-xs text-neutral-400 font-sans">
+                      <thead>
+                        <tr className="bg-white/5 text-white border-b border-white/10">
+                          <th className="p-3.5 font-semibold">Function Signature</th>
+                          <th className="p-3.5 font-semibold">Description</th>
+                          <th className="p-3.5 font-semibold">Gas Metric</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        <tr>
+                          <td className="p-3.5 font-mono text-cyan-300">register_anchor(anchor: Address, limit: i128)</td>
+                          <td className="p-3.5">Registers a regulated off-ramp and assigns default credit metrics.</td>
+                          <td className="p-3.5 font-mono text-neutral-500">Medium</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3.5 font-mono text-cyan-300">flag_dispute(merchant: Address, proof: BytesN&lt;32&gt;)</td>
+                          <td className="p-3.5">Triggers a challenge window against an underperforming gateway.</td>
+                          <td className="p-3.5 font-mono text-neutral-500">High (WASM storage write)</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3.5 font-mono text-cyan-300">resolve_dispute(dispute_id: u64, receipt: BytesN&lt;32&gt;)</td>
+                          <td className="p-3.5">Clears pending challenge marks using verified payment signatures.</td>
+                          <td className="p-3.5 font-mono text-neutral-500">Medium</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3.5 font-mono text-cyan-300">liquidate_anchor(dispute_id: u64)</td>
+                          <td className="p-3.5">Liquidates staked anchor collateral in case of unresolved default.</td>
+                          <td className="p-3.5 font-mono text-neutral-500">High (Cross-contract execution)</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
             </motion.div>
           )}
 
+          {/* 3. SDK & API INTEGRATION */}
           {activeTab === "sdk-integration" && (
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
-              className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300"
+              className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300 font-sans"
             >
-              <h1 className="font-instrument text-4xl text-white tracking-tight">SDK & CLI Integration</h1>
-              <p>
-                Integrate with AnchorVault smart contracts using your choice of developer tools. Check the dynamic code playground below:
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold text-purple-400 uppercase tracking-widest font-sans">Developer SDK Framework</span>
+                <h1 className="font-instrument text-4xl lg:text-5xl text-white tracking-tight leading-none">SDK & Client Integrations</h1>
+              </div>
+              <p className="text-neutral-400">
+                Interact programmatically with AnchorVault smart contracts using Javascript, Typescript, or pure Rust. Toggle the code playground below:
               </p>
 
-              {/* Code Tabs */}
-              <div className="flex gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl w-fit">
+              {/* Code Tab Switcher */}
+              <div className="flex gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl w-fit">
                 <button
-                  onClick={() => setCodeTab("rust")}
-                  className={`text-xs px-4 py-2 rounded-lg cursor-pointer transition-colors ${
-                    codeTab === "rust" ? "bg-white/10 text-white font-semibold" : "text-neutral-400 hover:text-white"
+                  onClick={() => setCodeTab("typescript")}
+                  className={`text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all border ${
+                    codeTab === "typescript" ? "bg-white/10 text-white border-white/10 font-semibold" : "text-neutral-400 border-transparent hover:text-white"
                   }`}
                 >
-                  Rust SDK
+                  Typescript SDK
                 </button>
                 <button
-                  onClick={() => setCodeTab("js")}
-                  className={`text-xs px-4 py-2 rounded-lg cursor-pointer transition-colors ${
-                    codeTab === "js" ? "bg-white/10 text-white font-semibold" : "text-neutral-400 hover:text-white"
+                  onClick={() => setCodeTab("rust")}
+                  className={`text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all border ${
+                    codeTab === "rust" ? "bg-white/10 text-white border-white/10 font-semibold" : "text-neutral-400 border-transparent hover:text-white"
                   }`}
                 >
-                  JavaScript
+                  Rust SDK Client
                 </button>
               </div>
 
-              {/* Code Snippet Box */}
-              {codeTab === "rust" ? (
-                <div className="bg-neutral-900 border border-white/10 rounded-2xl p-5 font-mono text-xs leading-relaxed overflow-x-auto text-neutral-300">
-                  <span className="text-neutral-500">// Rust SDK call to register deposit corridors</span><br />
-                  <span className="text-purple-300">use</span> soroban_sdk::&#123;Env, Address, symbol_short&#125;;<br /><br />
-                  <span className="text-purple-300">pub fn</span> <span className="text-cyan-300">deposit_to_vault</span>(env: Env, user: Address, amount: i128) &#123;<br />
-                  &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-neutral-500">// Fetch CoreVault Contract address</span><br />
-                  &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-300">let</span> vault_client = CoreVaultClient::new(&amp;env, &amp;Address::from_str(&amp;env, <span className="text-green-300">"CCU3..."</span>));<br /><br />
-                  &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-neutral-500">// Trigger secure automated corridor routing</span><br />
-                  &nbsp;&nbsp;&nbsp;&nbsp;vault_client.deposit(&amp;user, &amp;amount);<br />
-                  &#125;
+              {/* TypeScript Tab Content */}
+              {codeTab === "typescript" && (
+                <div className="flex flex-col gap-5">
+                  <div className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-6 flex flex-col gap-4">
+                    <span className="text-xs font-bold tracking-widest text-neutral-500 uppercase font-sans">Interactive Wallet Integrations</span>
+                    <p className="text-xs text-neutral-400 leading-normal">
+                      We support Freighter, Lobstr, Albedo, xBull, Hana, and Rabet using standard browser adapter signatures. Connect and transact using:
+                    </p>
+
+                    <div className="flex gap-2 bg-white/5 p-1 rounded-xl w-fit font-sans">
+                      {["freighter", "lobstr", "xbull"].map(id => (
+                        <button
+                          key={id}
+                          onClick={() => setSdkTab(id)}
+                          className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all ${
+                            sdkTab === id ? "bg-[#7b39fc]/20 text-[#c29eff] border border-[#7b39fc]/40" : "text-neutral-400 hover:text-white"
+                          }`}
+                        >
+                          {id}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="bg-neutral-950 border border-white/5 rounded-xl p-5 font-mono text-[11px] leading-relaxed text-neutral-300 overflow-x-auto">
+                      {sdkTab === "freighter" && (
+                        <>
+                          <span className="text-neutral-500">// 1. Detect and sign transaction via Freighter extension adapter</span><br />
+                          <span className="text-purple-300">import</span> &#123; isConnected, signTransaction &#125; <span className="text-purple-300">from</span> <span className="text-green-300">"@stellar/freighter-api"</span>;<br /><br />
+                          <span className="text-purple-300">async function</span> <span className="text-cyan-300">signWithFreighter</span>(txXdr) &#123;<br />
+                          &nbsp;&nbsp;<span className="text-purple-300">if</span> (<span className="text-purple-300">await</span> isConnected()) &#123;<br />
+                          &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-300">const</span> signedXdr = <span className="text-purple-300">await</span> signTransaction(txXdr, &#123;<br />
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;network: <span className="text-green-300">"TESTNET"</span>,<br />
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;networkPassphrase: <span className="text-green-300">"Test SDF Network ; September 2015"</span><br />
+                          &nbsp;&nbsp;&nbsp;&nbsp;&#125;);<br />
+                          &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-300">return</span> signedXdr;<br />
+                          &nbsp;&nbsp;&#125;<br />
+                          &nbsp;&nbsp;<span className="text-purple-300">throw new</span> <span className="text-yellow-400">Error</span>(<span className="text-green-300">"Freighter Extension not found."</span>);<br />
+                          &#125;
+                        </>
+                      )}
+                      {sdkTab === "lobstr" && (
+                        <>
+                          <span className="text-neutral-500">// 2. Connect via Stellar Wallet Kit for LOBSTR secure proxy</span><br />
+                          <span className="text-purple-300">import</span> &#123; StellarWalletsKit, Networks &#125; <span className="text-purple-300">from</span> <span className="text-green-300">"@creit.tech/stellar-wallets-kit"</span>;<br /><br />
+                          <span className="text-purple-300">async function</span> <span className="text-cyan-300">connectLobstr</span>() &#123;<br />
+                          &nbsp;&nbsp;<span className="text-purple-300">const</span> kit = <span className="text-purple-300">new</span> <span className="text-yellow-400">StellarWalletsKit</span>(&#123; network: Networks.TESTNET &#125;);<br />
+                          &nbsp;&nbsp;kit.setWallet(<span className="text-green-300">"lobstr"</span>);<br />
+                          &nbsp;&nbsp;<span className="text-purple-300">const</span> &#123; address &#125; = <span className="text-purple-300">await</span> kit.fetchAddress();<br />
+                          &nbsp;&nbsp;console.log(<span className="text-green-300">"LOBSTR connected:"</span>, address);<br />
+                          &#125;
+                        </>
+                      )}
+                      {sdkTab === "xbull" && (
+                        <>
+                          <span className="text-neutral-500">// 3. Request key access directly from xBull Power-User extension</span><br />
+                          <span className="text-purple-300">async function</span> <span className="text-cyan-300">connectXBull</span>() &#123;<br />
+                          &nbsp;&nbsp;<span className="text-purple-300">if</span> (window.xBull) &#123;<br />
+                          &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-300">const</span> addresses = <span className="text-purple-300">await</span> window.xBull.getPublicKey();<br />
+                          &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-300">return</span> addresses[0];<br />
+                          &nbsp;&nbsp;&#125;<br />
+                          &nbsp;&nbsp;alert(<span className="text-green-300">"Please install xBull extension to continue."</span>);<br />
+                          &#125;
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-6 flex flex-col gap-4">
+                    <span className="text-xs font-bold tracking-widest text-neutral-500 uppercase font-sans">Complete Invocation Workflow (Deposit stablecoins)</span>
+                    <div className="bg-neutral-950 border border-white/5 rounded-xl p-5 font-mono text-[11px] leading-relaxed text-neutral-300 overflow-x-auto">
+                      <span className="text-neutral-500">// TypeScript RPC execution client for CoreVault</span><br />
+                      <span className="text-purple-300">import</span> &#123; Contract, rpc, TransactionBuilder, nativeToScVal &#125; <span className="text-purple-300">from</span> <span className="text-green-300">"@stellar/stellar-sdk"</span>;<br /><br />
+                      <span className="text-purple-300">const</span> server = <span className="text-purple-300">new</span> rpc.<span className="text-yellow-400">Server</span>(<span className="text-green-300">"https://soroban-testnet.stellar.org"</span>);<br />
+                      <span className="text-purple-300">const</span> contractId = <span className="text-green-300">"CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK"</span>;<br /><br />
+                      <span className="text-purple-300">export async function</span> <span className="text-cyan-300">executeDeposit</span>(senderAddress, amountDecimal) &#123;<br />
+                      &nbsp;&nbsp;<span className="text-neutral-500">// Fetch active account sequence numbers</span><br />
+                      &nbsp;&nbsp;<span className="text-purple-300">const</span> sourceAccount = <span className="text-purple-300">await</span> server.getLedgerAccount(senderAddress);<br />
+                      &nbsp;&nbsp;<span className="text-purple-300">const</span> amountInteger = <span className="text-yellow-400">BigInt</span>(amountDecimal * 10 ** 7); <span className="text-neutral-500">// Scale to 7 decimal places</span><br /><br />
+                      &nbsp;&nbsp;<span className="text-purple-300">const</span> vaultContract = <span className="text-purple-300">new</span> <span className="text-yellow-400">Contract</span>(contractId);<br />
+                      &nbsp;&nbsp;<span className="text-purple-300">const</span> tx = <span className="text-purple-300">new</span> <span className="text-yellow-400">TransactionBuilder</span>(sourceAccount, &#123; fee: <span className="text-green-300">"100000"</span> &#125;)<br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;.addOperation(vaultContract.call(<br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-green-300">"deposit"</span>,<br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nativeToScVal(senderAddress, &#123; type: <span className="text-green-300">"address"</span> &#125;),<br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nativeToScVal(amountInteger, &#123; type: <span className="text-green-300">"i128"</span> &#125;)<br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;))<br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;.setTimeout(30)<br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;.build();<br /><br />
+                      &nbsp;&nbsp;<span className="text-neutral-500">// Dispatch build for wallet signing</span><br />
+                      &nbsp;&nbsp;<span className="text-purple-300">return</span> tx.toXDR();<br />
+                      &#125;
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                <div className="bg-neutral-900 border border-white/10 rounded-2xl p-5 font-mono text-xs leading-relaxed overflow-x-auto text-neutral-300">
-                  <span className="text-neutral-500">// JS implementation using Freighter Wallet authorization</span><br />
-                  <span className="text-purple-300">import</span> &#123; SorobanRpc, Contract &#125; <span className="text-purple-300">from</span> <span className="text-green-300">"@stellar/stellar-sdk"</span>;<br /><br />
-                  <span className="text-purple-300">async function</span> <span className="text-cyan-300">handleVaultDeposit</span>(userAddress, amount) &#123;<br />
-                  &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-300">const</span> vault = <span className="text-purple-300">new</span> <span className="text-yellow-400">Contract</span>(<span className="text-green-300">"CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK"</span>);<br />
-                  &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-300">const</span> tx = vault.call(<span className="text-green-300">"deposit"</span>, userAddress, amount);<br />
-                  &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-300">const</span> txResult = <span className="text-purple-300">await</span> submitToFreighter(tx);<br />
-                  &nbsp;&nbsp;&nbsp;&nbsp;console.log(<span className="text-green-300">"Corridor Settlement Tx Resolved:"</span>, txResult.hash);<br />
+              )}
+
+              {/* Rust Tab Content */}
+              {codeTab === "rust" && (
+                <div className="bg-neutral-950 border border-white/5 rounded-2xl p-5 font-mono text-[11px] leading-relaxed text-neutral-300 overflow-x-auto">
+                  <span className="text-neutral-500">// Rust SDK client cross-contract call implementation</span><br />
+                  <span className="text-purple-300">use</span> soroban_sdk::&#123;contract, contractimpl, Address, Env, IntoVal&#125;;<br /><br />
+                  mod vault_contract &#123;<br />
+                  &nbsp;&nbsp;soroban_sdk::contractimport!(file = <span className="text-green-300">"target/wasm32-unknown-unknown/release/anchor_vault.wasm"</span>);<br />
+                  &#125;<br /><br />
+                  <span className="text-purple-300">#[contract]</span><br />
+                  <span className="text-purple-300">pub struct</span> <span className="text-yellow-400">GatewayClientConnector</span>;<br /><br />
+                  <span className="text-purple-300">#[contractimpl]</span><br />
+                  <span className="text-purple-300">impl</span> GatewayClientConnector &#123;<br />
+                  &nbsp;&nbsp;<span className="text-purple-300">pub fn</span> <span className="text-cyan-300">deposit_lp_capital</span>(env: Env, vault_addr: Address, user: Address, amount: i128) -&gt; i128 &#123;<br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-300">let</span> client = vault_contract::Client::new(&amp;env, &amp;vault_addr);<br /><br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-neutral-500">// Cross-contract call with gas checkpoints</span><br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-purple-300">let</span> minted_shares = client.deposit(&amp;user, &amp;amount);<br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;minted_shares<br />
+                  &nbsp;&nbsp;&#125;<br />
                   &#125;
                 </div>
               )}
             </motion.div>
           )}
 
+          {/* 4. IMPLEMENTATION & CLI DEPLOY */}
           {activeTab === "implementation-guide" && (
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
-              className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300"
+              className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300 font-sans"
             >
-              <h1 className="font-instrument text-4xl text-white tracking-tight">Implementation & CLI Deploy</h1>
-              <p>
-                Follow this comprehensive walkthrough to build, optimize, and deploy the AnchorVault Smart Contract suite to Stellar Mainnet or Testnet.
-              </p>
-
-              <h3 className="text-lg font-semibold text-white tracking-tight mt-4">Step 1: Compile Smart Contracts</h3>
-              <p>
-                Compile the Rust contract codebase into high-performance WASM binaries:
-              </p>
-              <div className="bg-neutral-900 border border-white/10 rounded-2xl p-5 font-mono text-xs text-neutral-300">
-                # Build target WASM modules<br />
-                cargo build --target wasm32-unknown-unknown --release<br /><br />
-                # Optimize WASM size using cargo-contract or stellar-cli<br />
-                stellar contract optimize --wasm target/wasm32-unknown-unknown/release/anchor_vault.wasm
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold text-purple-400 uppercase tracking-widest font-sans">Operations & Orchestrations</span>
+                <h1 className="font-instrument text-4xl lg:text-5xl text-white tracking-tight leading-none">CLI Implementation & Deploy</h1>
               </div>
-
-              <h3 className="text-lg font-semibold text-white tracking-tight mt-4">Step 2: Deploy Contracts to Network</h3>
-              <p>
-                Submit the optimized WASM files to the Soroban execution host:
+              <p className="text-neutral-400 font-light">
+                Follow this exact operational sequence to compile, size-optimize, deploy, and bind the smart contracts locally or on public networks using the Stellar Command Line Interface.
               </p>
-              <div className="bg-neutral-900 border border-white/10 rounded-2xl p-5 font-mono text-xs text-neutral-300">
-                # Deploy CoreVault WASM<br />
-                stellar contract deploy \<br />
-                &nbsp;&nbsp;--wasm target/wasm32-unknown-unknown/release/anchor_vault.optimized.wasm \<br />
-                &nbsp;&nbsp;--source deployer_key_identity \<br />
-                &nbsp;&nbsp;--network testnet
-              </div>
 
-              <h3 className="text-lg font-semibold text-white tracking-tight mt-4">Step 3: Parameter Initialization</h3>
-              <p>
-                Link the dynamic contract variables (USDC token interface, admin multisig, and dynamic registers) to bind the system:
-              </p>
-              <div className="bg-neutral-900 border border-white/10 rounded-2xl p-5 font-mono text-xs text-neutral-300">
-                stellar contract invoke \<br />
-                &nbsp;&nbsp;--id CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK \<br />
-                &nbsp;&nbsp;--source deployer_key_identity \<br />
-                &nbsp;&nbsp;--network testnet \<br />
-                &nbsp;&nbsp;-- \<br />
-                &nbsp;&nbsp;initialize \<br />
-                &nbsp;&nbsp;--admin GDSKOPENSOURCEKITCORRIDOR72DX3DQNJDJINT66 \<br />
-                &nbsp;&nbsp;--asset CCW67CUUZD4BYLOXPUM6UJCY34UCCIC2CC3V2F
+              <div className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-6 flex flex-col gap-6">
+                {/* Step 1 */}
+                <div className="flex flex-col gap-3">
+                  <span className="text-sm font-bold text-white flex items-center gap-2">
+                    <span className="flex items-center justify-center h-6 w-6 rounded-full bg-purple-500/20 text-purple-300 text-xs font-mono">1</span>
+                    Compile and Optimize WASM Bytecode
+                  </span>
+                  <p className="text-xs text-neutral-400 -mt-1 pl-8">
+                    Compile the modular Rust crates to standard 32-bit WASM outputs and optimize target file sizes to stay under Soroban limits.
+                  </p>
+                  <div className="bg-neutral-950 border border-white/5 rounded-xl p-4 font-mono text-[11px] text-neutral-300 pl-8 overflow-x-auto">
+                    # 1. Compile target binaries<br />
+                    cargo build --target wasm32-unknown-unknown --release<br /><br />
+                    # 2. Size optimize binary footprint using Stellar CLI wraps<br />
+                    stellar contract optimize --wasm target/wasm32-unknown-unknown/release/anchor_vault.wasm
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div className="flex flex-col gap-3">
+                  <span className="text-sm font-bold text-white flex items-center gap-2">
+                    <span className="flex items-center justify-center h-6 w-6 rounded-full bg-purple-500/20 text-purple-300 text-xs font-mono">2</span>
+                    Upload Bytecode to Stellar Testnet Host
+                  </span>
+                  <p className="text-xs text-neutral-400 -mt-1 pl-8">
+                    Submit the optimized WASM files to the network to request storage allocations and assign contract addresses.
+                  </p>
+                  <div className="bg-neutral-950 border border-white/5 rounded-xl p-4 font-mono text-[11px] text-neutral-300 pl-8 overflow-x-auto">
+                    stellar contract deploy \<br />
+                    &nbsp;&nbsp;--wasm target/wasm32-unknown-unknown/release/anchor_vault.optimized.wasm \<br />
+                    &nbsp;&nbsp;--source admin_deployer_identity \<br />
+                    &nbsp;&nbsp;--network testnet
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="flex flex-col gap-3">
+                  <span className="text-sm font-bold text-white flex items-center gap-2">
+                    <span className="flex items-center justify-center h-6 w-6 rounded-full bg-purple-500/20 text-purple-300 text-xs font-mono">3</span>
+                    Initialize System Variables & Anchor Assets
+                  </span>
+                  <p className="text-xs text-neutral-400 -mt-1 pl-8">
+                    Initialize CoreVault references by invoking the initialize functions on-chain, binding the administrator and target USDC contract references.
+                  </p>
+                  <div className="bg-neutral-950 border border-white/5 rounded-xl p-4 font-mono text-[11px] text-neutral-300 pl-8 overflow-x-auto">
+                    stellar contract invoke \<br />
+                    &nbsp;&nbsp;--id CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK \<br />
+                    &nbsp;&nbsp;--source admin_deployer_identity \<br />
+                    &nbsp;&nbsp;--network testnet \<br />
+                    &nbsp;&nbsp;-- \<br />
+                    &nbsp;&nbsp;initialize \<br />
+                    &nbsp;&nbsp;--admin GDSKOPENSOURCEKITCORRIDOR72DX3DQNJDJINT66 \<br />
+                    &nbsp;&nbsp;--asset CCW67CUUZD4BYLOXPUM6UJCY34UCCIC2CC3V2F
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
 
+          {/* 5. ACCURACY & MATH PROOFS */}
           {activeTab === "accuracy-math" && (
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
-              className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300"
+              className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300 font-sans"
             >
-              <h1 className="font-instrument text-4xl text-white tracking-tight">Accuracy & Mathematics Proofs</h1>
-              <p>
-                To avoid floating-point non-determinism across Stellar distributed consensus nodes, the Soroban host executes only fixed-point integer mathematics. AnchorVault implements safe-math arithmetic scaled to <strong>7 decimal places (10<sup>7</sup> scaling)</strong> to preserve 100% precision accuracy.
-              </p>
-
-              <div className="h-px bg-white/10 w-full" />
-
-              <h3 className="text-lg font-semibold text-white tracking-tight mt-2">1. LP Share Minting Formula</h3>
-              <p>
-                When a user deposits capital D, the dynamic allocation of LP shares S_minted is calculated mathematically based on existing total shares S_total and total pooled reserve assets R_total:
-              </p>
-              <div className="bg-white/5 border border-white/10 rounded-xl p-5 font-mono text-center flex flex-col gap-2">
-                <span className="text-[#c29eff] text-base sm:text-lg">S_minted = D &times; (S_total / R_total)</span>
-                <span className="text-[11px] text-neutral-500">Subject to condition: If S_total == 0, S_minted = D</span>
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold text-purple-400 uppercase tracking-widest font-sans">Consensus Determinism & Safeguards</span>
+                <h1 className="font-instrument text-4xl lg:text-5xl text-white tracking-tight leading-none">Mathematical Integrity & Yield Verification</h1>
               </div>
-              <p className="text-sm">
-                <strong>Rounding Attack Mitigation:</strong> To prevent fractional share drain exploits (inflation attacks), the contract strictly <strong>rounds down</strong> on deposits using the <code>checked_div</code> operator. Any decimal fractional remainder is permanently committed to the vault reserve, boosting backing value for existing LPs.
+              <p className="text-neutral-400 font-light">
+                To guarantee absolute consensus compatibility, all smart contracts execute arithmetic calculations strictly in fixed-point integer spaces scaled to **7 decimal places (10<sup>7</sup> scaling factors)**.
               </p>
 
-              <h3 className="text-lg font-semibold text-white tracking-tight mt-4">2. LP Share Withdrawal Formula</h3>
-              <p>
-                When a liquidity provider redeems shares S_redeem to reclaim their assets A_payout:
-              </p>
-              <div className="bg-white/5 border border-white/10 rounded-xl p-5 font-mono text-center flex flex-col gap-2">
-                <span className="text-[#c29eff] text-base sm:text-lg">A_payout = S_redeem &times; (R_total / S_total)</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Formula 1 */}
+                <div className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-5 flex flex-col gap-3">
+                  <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest font-mono">1. Dynamic LP Share Mint Allocation</span>
+                  <div className="bg-black/40 border border-white/5 p-4 rounded-xl font-mono text-center text-[#c29eff] font-bold text-sm">
+                    S_mint = D * (S_total / R_total)
+                  </div>
+                  <p className="text-xs text-neutral-400 leading-relaxed font-light font-sans">
+                    On deposit of D stablecoins, LP shares are calculated relative to existing total shares (S_total) and total pooled vault reserves (R_total).
+                  </p>
+                  <span className="text-[10px] text-green-300 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded w-fit uppercase font-semibold">Rounds Down (Protects Existing LPs)</span>
+                </div>
+
+                {/* Formula 2 */}
+                <div className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-5 flex flex-col gap-3">
+                  <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest font-mono">2. Dynamic Share Redemption Payout</span>
+                  <div className="bg-black/40 border border-white/5 p-4 rounded-xl font-mono text-center text-[#c29eff] font-bold text-sm">
+                    A_payout = S_burn * (R_total / S_total)
+                  </div>
+                  <p className="text-xs text-neutral-400 leading-relaxed font-light font-sans">
+                    When burning S_burn shares to withdraw capital, the stablecoin payout matches the proportional pool assets.
+                  </p>
+                  <span className="text-[10px] text-yellow-300 bg-yellow-500/10 border border-yellow-500/20 px-2 py-1 rounded w-fit uppercase font-semibold">Rounds Up (Safeguards Vault Reserves)</span>
+                </div>
               </div>
-              <p className="text-sm">
-                <strong>Rounding Safeguards:</strong> During share burning operations, decimal calculations strictly <strong>round up</strong>, safeguarding vault assets and guaranteeing zero-slippage backing structures.
-              </p>
 
-              <h3 className="text-lg font-semibold text-white tracking-tight mt-4">3. High-Precision Integer SafeMath</h3>
-              <p>
-                All on-chain integrations execute via native Rust checked arithmetic wraps. This blocks all potential integer underflow/overflow vectors:
-              </p>
-              <div className="bg-neutral-900 border border-white/10 rounded-2xl p-5 font-mono text-xs text-neutral-300">
-                // Strict checked arithmetic block in CoreVault<br />
-                let next_shares = current_shares<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;.checked_add(minted_amount)<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;.ok_or(VaultError::ArithmeticOverflow)?;
+              {/* Precision SafeMath */}
+              <div className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-6 flex flex-col gap-4">
+                <span className="text-sm font-semibold text-white">Inflation Attack & Fraction Draining Mitigations</span>
+                <p className="text-xs text-neutral-400 leading-relaxed font-sans">
+                  AnchorVault wraps all mathematical additions, subtractions, and allocations in verified Rust SafeMath blocks. Floating point operations are strictly banned on the Soroban runtime to avoid minor variations across distributed systems.
+                </p>
+                <div className="bg-neutral-950 border border-white/5 rounded-xl p-4 font-mono text-[11px] text-neutral-300 overflow-x-auto">
+                  <span className="text-neutral-500">// High-precision Checked SafeMath block</span><br />
+                  <span className="text-purple-300">let</span> next_shares = current_shares<br />
+                  &nbsp;&nbsp;.checked_add(minted_amount)<br />
+                  &nbsp;&nbsp;.ok_or(VaultError::ArithmeticOverflow)?;
+                </div>
               </div>
             </motion.div>
           )}
 
+          {/* 6. DISPUTE RESOLUTION */}
           {activeTab === "dispute-resolution" && (
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
-              className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300 mb-20"
+              className="flex flex-col gap-6 font-light leading-relaxed text-neutral-300 font-sans"
             >
-              <h1 className="font-instrument text-4xl text-white tracking-tight">Protocol Dispute & Claims</h1>
-              <p>
-                To maintain a completely decentralized and zero-trust corridor ecosystem, AnchorVault provides automatic dispute claims mechanisms backed by staked anchor deposits.
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold text-purple-400 uppercase tracking-widest font-sans">Arbitrage & Security Operations</span>
+                <h1 className="font-instrument text-4xl lg:text-5xl text-white tracking-tight leading-none">Dispute & Programmatic slash</h1>
+              </div>
+              <p className="text-neutral-400 font-light">
+                To guarantee security without relying on manual escrow or third-party custody, AnchorVault implements fully automated, programmatic, on-chain dispute arbitrage flows.
               </p>
-              <h3 className="text-lg font-semibold text-white mt-4 tracking-tight">On-Chain Disputes Lifecycle</h3>
-              <ol className="list-decimal pl-6 flex flex-col gap-3">
-                <li><strong>Gateway Locking:</strong> An anchor registers a corridor and stakes a minimum of 10,000 USDC reputation bond in our <code>AnchorRegistry</code>.</li>
-                <li><strong>Challenge Initiation:</strong> In case of cross-border settlement delay or default, the merchant initiates a dispute ticket on-chain, proving transaction failure via standard cryptographic signatures.</li>
-                <li><strong>Automated Dispute Arbitrage:</strong> If the gateway fails to respond with cryptographic proof of settlement within the designated dispute corridor epoch, the <code>AnchorRegistry</code> instantly liquidates the anchor's bond and refunds the merchant directly.</li>
-              </ol>
+
+              {/* Flowchart Sequence */}
+              <div className="border border-white/5 bg-[#0c0c0e] rounded-2xl p-6 flex flex-col gap-6">
+                <span className="text-sm font-bold text-white">Automatic Challenge Resolution Sequence</span>
+                
+                <div className="flex flex-col gap-4">
+                  {/* Step A */}
+                  <div className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="h-7 w-7 rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center font-bold text-xs font-mono border border-purple-500/30">1</div>
+                      <div className="w-px h-10 bg-white/10" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-semibold text-white">Gateway Reputation Stake locking</span>
+                      <p className="text-xs text-neutral-400 font-sans">
+                        Anchors must lock a minimum of 10,000 USDC reputation bonds inside the `AnchorRegistry` to claim a corridor credit line.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step B */}
+                  <div className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="h-7 w-7 rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center font-bold text-xs font-mono border border-purple-500/30">2</div>
+                      <div className="w-px h-10 bg-white/10" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-semibold text-white">Merchant Challenge Initiation</span>
+                      <p className="text-xs text-neutral-400 font-sans">
+                        In case of transaction default or settlement delays, the merchant submits an on-chain dispute flag along with cryptographic transaction receipts.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step C */}
+                  <div className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="h-7 w-7 rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center font-bold text-xs font-mono border border-purple-500/30">3</div>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-semibold text-white">Programmatic Bond Liquidation</span>
+                      <p className="text-xs text-neutral-400 font-sans">
+                        If the anchor fails to provide cryptographic proof of settlement before the 72-hour epoch deadline, the registry slashes their locked bond, fully refunding the liquidity pool and merchant.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           )}
+
         </div>
       </div>
     </motion.div>
@@ -3161,6 +3472,277 @@ function TermsView() {
           </div>
         </div>
       </div>
+    </motion.div>
+  );
+}
+
+// ===================================================================
+//             GORGEOUS PREMIUM BRANDING KIT VIEW
+// ===================================================================
+
+function BrandingView() {
+  const [copiedColor, setCopiedColor] = useState<string | null>(null);
+
+  const copyToClipboard = (hex: string) => {
+    navigator.clipboard.writeText(hex);
+    setCopiedColor(hex);
+    setTimeout(() => setCopiedColor(null), 2000);
+  };
+
+  const brandColors = [
+    { name: "Anchor Purple (Primary)", hex: "#7B39FC", desc: "Our core visual marker. Used for primary CTAs, active highlights, and glowing gradients." },
+    { name: "Neon Cyan (Secondary)", hex: "#00E5FF", desc: "Represents seamless capital movement, transaction corridors, and high liquidity flows." },
+    { name: "Obsidian Deep (Backdrop)", hex: "#08080A", desc: "Our main application canvas color. Creates deep visual contrast and futuristic vibes." },
+    { name: "Obsidian Glass (Card)", hex: "#0C0C0E", desc: "Used for high-fidelity panels, containers, and borders with glassmorphism blending." },
+    { name: "Muted Zinc (Text)", hex: "#A1A1AA", desc: "Provides optimal legibility and sophisticated dark-mode styling for content and paragraphs." },
+    { name: "Bright White (Header)", hex: "#FFFFFF", desc: "Used exclusively for crisp typography, high-impact headings, and sharp icons." },
+  ];
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className="w-full max-w-[1000px] mx-auto px-6 pt-28 lg:pt-36 pb-24 min-h-screen text-neutral-300 font-sans font-light leading-relaxed flex flex-col gap-10"
+    >
+      {/* Header section */}
+      <div className="flex flex-col gap-3 relative">
+        {/* Glow effect */}
+        <div className="absolute -top-12 -left-12 h-48 w-48 rounded-full bg-purple-500/10 blur-[60px] pointer-events-none" />
+        
+        <h1 className="font-instrument text-4xl lg:text-6xl text-white tracking-tight leading-none">
+          Branding Kit
+        </h1>
+        <p className="text-purple-300 text-sm tracking-wide uppercase font-semibold flex items-center gap-2">
+          <span>Official Visual Identity Guidelines & Assets</span>
+        </p>
+      </div>
+
+      <div className="h-px bg-white/10 w-full" />
+
+      {/* Intro */}
+      <p className="text-lg text-neutral-400 font-light max-w-3xl leading-relaxed font-sans">
+        Welcome to the official AnchorVault Branding Kit. Here you will find our core design elements, high-fidelity brand assets, color specifications, and usage instructions to maintain visual consistency across all Stellar DeFi platforms and integrations.
+      </p>
+
+      {/* Brand assets showcase */}
+      <div className="flex flex-col gap-6">
+        <h2 className="text-2xl font-semibold text-white tracking-tight font-instrument">1. Brand Logo & Mark</h2>
+        <p className="text-sm text-neutral-400 -mt-3 font-sans">
+          Our emblem signifies institutional trust, decentralized corridors, and Stellar Soroban security.
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Dark Background Logo */}
+          <div className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-8 flex flex-col items-center justify-between min-h-[300px] relative overflow-hidden group">
+            <div className="absolute top-4 left-4 text-xs font-semibold text-neutral-500 uppercase tracking-widest font-sans">Dark Canvas</div>
+            
+            <div className="flex-1 flex items-center justify-center p-6">
+              <img src="/logo.png" alt="AnchorVault Dark Logo" className="h-28 w-28 object-contain drop-shadow-[0_0_25px_rgba(123,57,252,0.2)] group-hover:scale-105 transition-transform duration-300" />
+            </div>
+
+            <div className="w-full flex items-center justify-between gap-4 mt-4 font-sans">
+              <span className="text-xs text-neutral-500 font-mono">logo.png (Transparent)</span>
+              <a 
+                href="/logo.png" 
+                download="AnchorVault_Logo_Dark.png"
+                className="bg-white/5 hover:bg-[#7b39fc]/20 border border-white/10 hover:border-[#7b39fc]/30 text-white rounded-lg text-xs font-medium px-4 py-2 transition-all flex items-center gap-1.5"
+              >
+                <span>Download Assets</span>
+                <span className="text-[10px]">▼</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Light Background Logo */}
+          <div className="bg-neutral-100 border border-neutral-200 rounded-2xl p-8 flex flex-col items-center justify-between min-h-[300px] relative overflow-hidden group">
+            <div className="absolute top-4 left-4 text-xs font-semibold text-neutral-400 uppercase tracking-widest font-sans">Light Canvas</div>
+            
+            <div className="flex-1 flex items-center justify-center p-6">
+              <img src="/logo.png" alt="AnchorVault Light Logo" className="h-28 w-28 object-contain filter invert drop-shadow-[0_0_15px_rgba(0,0,0,0.1)] group-hover:scale-105 transition-transform duration-300" />
+            </div>
+
+            <div className="w-full flex items-center justify-between gap-4 mt-4 font-sans">
+              <span className="text-xs text-neutral-500 font-mono">logo_light.png</span>
+              <a 
+                href="/logo.png" 
+                download="AnchorVault_Logo_Light.png"
+                className="bg-neutral-900/5 hover:bg-neutral-900/10 border border-neutral-900/10 text-neutral-900 rounded-lg text-xs font-medium px-4 py-2 transition-all flex items-center gap-1.5"
+              >
+                <span>Download Assets</span>
+                <span className="text-[10px]">▼</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Brand banner showcase */}
+      <div className="flex flex-col gap-6">
+        <h2 className="text-2xl font-semibold text-white tracking-tight font-instrument">2. Hero Banner & Design Showcase</h2>
+        <p className="text-sm text-neutral-400 -mt-3 font-sans">
+          Our high-impact brand banner represents the visual style, premium dark aesthetic, and liquidity pools of AnchorVault.
+        </p>
+
+        <div className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-4 overflow-hidden flex flex-col gap-4 relative group">
+          <div className="aspect-[16/9] w-full rounded-lg overflow-hidden bg-neutral-950 relative">
+            <img 
+              src="/branding_banner.png" 
+              alt="AnchorVault Branding Banner" 
+              className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+          </div>
+          
+          <div className="flex items-center justify-between px-2 py-1 font-sans">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-semibold text-white">Visual Banner (High Resolution)</span>
+              <span className="text-xs text-neutral-500 font-mono">branding_banner.png (1920x1080)</span>
+            </div>
+            <a 
+              href="/branding_banner.png" 
+              download="AnchorVault_Brand_Banner.png"
+              className="bg-[#7b39fc] hover:bg-[#8b4eff] text-white rounded-lg text-xs font-semibold px-4 py-2.5 transition-all shadow-md shadow-[#7b39fc]/20 flex items-center gap-1.5"
+            >
+              <span>Download Image</span>
+              <span className="text-[10px]">▼</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Brand Colors Grid */}
+      <div className="flex flex-col gap-6">
+        <h2 className="text-2xl font-semibold text-white tracking-tight font-instrument">3. Core Color Palette</h2>
+        <p className="text-sm text-neutral-400 -mt-3 font-sans">
+          Our colors reflect next-gen technology and deep DeFi liquidity. Click on any swatch below to instantly copy its Hex value.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 font-sans">
+          {brandColors.map((color, idx) => (
+            <div 
+              key={idx}
+              onClick={() => copyToClipboard(color.hex)}
+              className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-4 flex flex-col gap-4 cursor-pointer hover:border-white/20 transition-all hover:-translate-y-1 active:scale-[0.98] group relative overflow-hidden"
+            >
+              {/* Colored box */}
+              <div 
+                className="w-full h-24 rounded-lg relative overflow-hidden shadow-inner flex items-end justify-end p-2"
+                style={{ backgroundColor: color.hex }}
+              >
+                <div className="bg-black/40 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-semibold text-white font-mono border border-white/10 uppercase">
+                  {color.hex}
+                </div>
+              </div>
+
+              {/* Title & Info */}
+              <div className="flex flex-col gap-1">
+                <span className="font-semibold text-sm text-white group-hover:text-purple-300 transition-colors duration-200">{color.name}</span>
+                <p className="text-xs text-neutral-400 leading-normal font-light">{color.desc}</p>
+              </div>
+
+              {/* Copy overlay message */}
+              <AnimatePresence>
+                {copiedColor === color.hex && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-[#7b39fc]/90 backdrop-blur-sm flex flex-col items-center justify-center text-white font-semibold text-sm gap-1"
+                  >
+                    <span>✓ Hex Copied!</span>
+                    <span className="text-xs font-mono opacity-80">{color.hex}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Typography Showcase */}
+      <div className="flex flex-col gap-6">
+        <h2 className="text-2xl font-semibold text-white tracking-tight font-instrument">4. Typographical System</h2>
+        <p className="text-sm text-neutral-400 -mt-3 font-sans">
+          We combine the humanistic elegance of Instrument Serif with the extreme legibility of Inter and Outfit.
+        </p>
+
+        <div className="bg-[#0c0c0e] border border-white/5 rounded-2xl p-6 flex flex-col gap-8">
+          {/* Headline Font */}
+          <div className="flex flex-col gap-2">
+            <span className="text-xs text-neutral-500 font-semibold tracking-widest uppercase font-sans">Primary Headings — Instrument Serif</span>
+            <div className="font-instrument text-4xl lg:text-5xl text-white tracking-tight leading-none">
+              The Soroban Corridors Protocol
+            </div>
+            <p className="text-xs text-neutral-400 font-mono">Usage: H1, Page Hero, Main Section Intros | italic/regular</p>
+          </div>
+
+          <div className="h-px bg-white/5" />
+
+          {/* Subheading Font */}
+          <div className="flex flex-col gap-2">
+            <span className="text-xs text-neutral-500 font-semibold tracking-widest uppercase font-sans">Secondary Elements — Outfit</span>
+            <div className="text-lg lg:text-xl font-semibold text-white uppercase tracking-wider font-sans">
+              DECENTRALIZED LIQUIDITY POOLS
+            </div>
+            <p className="text-xs text-neutral-400 font-mono">Usage: Component Titles, Nav Links, Metric Labels | semi-bold/medium</p>
+          </div>
+
+          <div className="h-px bg-white/5" />
+
+          {/* Body Font */}
+          <div className="flex flex-col gap-2">
+            <span className="text-xs text-neutral-500 font-semibold tracking-widest uppercase font-sans">Paragraph & Body Text — Inter / Sans-Serif</span>
+            <p className="text-sm text-neutral-400 font-light leading-relaxed max-w-2xl font-sans">
+              AnchorVault enables Stellar anchors to seamlessly claim corridor credits. All operations are local, secure, and powered by advanced Soroban smart contract architectures.
+            </p>
+            <p className="text-xs text-neutral-400 font-mono">Usage: Core copy, descriptive tags, tables, dynamic lists | light/normal</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Brand Usage Rules */}
+      <div className="flex flex-col gap-6">
+        <h2 className="text-2xl font-semibold text-white tracking-tight font-instrument">5. Core Design Principles</h2>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Dos */}
+          <div className="bg-[#0c0c0e] border border-green-500/10 rounded-2xl p-6 flex flex-col gap-4 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-green-500/20" />
+            <span className="font-semibold text-green-300 flex items-center gap-2 font-sans">
+              <span className="text-lg">✓</span> Do's
+            </span>
+            <ul className="list-disc pl-4 text-xs text-neutral-400 flex flex-col gap-2.5 font-sans">
+              <li>Use the primary logo mark on deep dark (#08080A) backgrounds with subtle purplish glows.</li>
+              <li>Provide ample padding and clear breathing space around the logo mark (at least 20% of width).</li>
+              <li>Use high-contrast Outfit typography for technical indicators and numbers.</li>
+              <li>Always maintain the exact relative proportions of the symbol.</li>
+            </ul>
+          </div>
+
+          {/* Don'ts */}
+          <div className="bg-[#0c0c0e] border border-red-500/10 rounded-2xl p-6 flex flex-col gap-4 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-red-500/20" />
+            <span className="font-semibold text-red-300 flex items-center gap-2 font-sans">
+              <span className="text-lg">✗</span> Don'ts
+            </span>
+            <ul className="list-disc pl-4 text-xs text-neutral-400 flex flex-col gap-2.5 font-sans">
+              <li>Do not stretch, squeeze, or skew the visual layout of the brand assets.</li>
+              <li>Do not overlay complex, high-contrast imagery behind the logo mark.</li>
+              <li>Do not colorize the logo mark in arbitrary shades outside our core colors.</li>
+              <li>Do not use generic blue, green, or red colors for primary brand styling.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer support notice */}
+      <div className="rounded-xl border border-white/5 bg-white/2 p-5 text-center mt-6 font-sans">
+        <p className="text-xs text-neutral-400 leading-relaxed font-light">
+          Need custom visual formats, raw vector SVGs, or editorial press permissions? Contact our core development group at <a href="mailto:support@anchorvault.co" className="text-purple-300 underline font-semibold">support@anchorvault.co</a>.
+        </p>
+      </div>
+
     </motion.div>
   );
 }
