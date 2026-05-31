@@ -1,8 +1,0 @@
-{
-  "index": "Overview & Introduction",
-  "smart-contracts": "Smart Contracts Deep-Dive",
-  "sdk-integration": "SDK & Client Integration",
-  "cli-deployment": "CLI Implementation & Deploy",
-  "accuracy-math": "Mathematics & Yield Proofs",
-  "dispute-arbitrage": "Dispute & Claims Arbitrage"
-}
