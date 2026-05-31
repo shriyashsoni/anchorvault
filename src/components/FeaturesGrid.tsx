@@ -125,7 +125,10 @@ const FeaturesGrid: React.FC = () => {
           </div>
 
           {/* Bottom - Reach Me */}
-          <div className="rounded-2xl bg-[#1e3a8a]/40 border border-blue-500/20 p-5 md:p-6 noise-overlay relative overflow-hidden flex flex-col shadow-lg shadow-blue-500/10">
+          <div 
+            onClick={() => window.open("https://anchorvault.xyz/docs/smart-contracts", "_blank")}
+            className="rounded-2xl bg-[#1e3a8a]/40 border border-blue-500/20 hover:border-blue-500/40 p-5 md:p-6 noise-overlay relative overflow-hidden flex flex-col shadow-lg shadow-blue-500/10 cursor-pointer transition-all group"
+          >
             <div className="relative z-10 flex items-center justify-start gap-3 mb-6">
               <Sparkle className="h-3 w-3 stroke-[1.5px] text-white/70" />
               <span className="uppercase tracking-[0.22em] text-[11px] text-white/70 font-semibold">SMART CONTRACTS</span>
@@ -133,10 +136,10 @@ const FeaturesGrid: React.FC = () => {
             </div>
             <div className="relative z-10 flex justify-between items-end">
               <div className="flex flex-col gap-1 font-medium">
-                <span className="text-sm">core_vault.wasm</span>
-                <span className="text-sm text-white/60">anchor_registry.wasm</span>
+                <span className="text-sm text-white group-hover:text-blue-300 transition-colors">core_vault.wasm</span>
+                <span className="text-sm text-white/60 group-hover:text-blue-200 transition-colors">anchor_registry.wasm</span>
               </div>
-              <button className="h-9 w-9 rounded-full bg-white flex items-center justify-center hover:scale-105 transition-transform shrink-0">
+              <button className="h-9 w-9 rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shrink-0 cursor-pointer">
                 <ArrowUpRight className="h-5 w-5 text-black stroke-[2px]" />
               </button>
             </div>

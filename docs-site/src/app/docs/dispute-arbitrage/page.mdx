@@ -27,7 +27,7 @@ To prevent escrow deadlock or manual third-party arbitration, all resolution pip
 ### A. Gateway Reputation Lockup
 Before an off-ramp anchor can claim an active cross-border remittance corridor, they must lock a minimum reputation bond of **10,000 USDC** inside the `AnchorRegistry` contract:
 
-$$\text{Active reputation stakes} \ge \text{Minimum required threshold (10,000 USDC)}$$
+> **Active reputation stakes >= 10,000 USDC**
 
 ### B. Merchant Challenge Initiation
 In case of transaction default or cross-border settlement delay, the merchant initiates a dispute ticket on-chain, proving transaction failure by submitting the transaction hashes:

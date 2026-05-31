@@ -1,21 +1,18 @@
 # Mathematics & Yield Proofs
 
-To avoid floating-point non-determinism across Stellar's distributed consensus nodes, the Soroban runtime executes calculations strictly in fixed-point integer spaces. AnchorVault implements safe checked arithmetic scaled to **7 decimal places ($10^7$ scaling factor)** to preserve absolute precision.
+To avoid floating-point non-determinism across Stellar's distributed consensus nodes, the Soroban runtime executes calculations strictly in fixed-point integer spaces. AnchorVault implements safe checked arithmetic scaled to **7 decimal places (10^7 scaling factor)** to preserve absolute precision.
 
 ---
 
 ## 1. Dynamic LP Share Minting Formula
 
-When a liquidity provider deposits capital $D$, the dynamic allocation of LP shares $S_{minted}$ is calculated mathematically based on existing total shares $S_{total}$ and total pooled reserve assets $R_{total}$:
+When a liquidity provider deposits capital `D`, the dynamic allocation of LP shares `S_minted` is calculated mathematically based on existing total shares `S_total` and total pooled reserve assets `R_total`:
 
-$$
-S_{minted} = D \times \left( \frac{S_{total}}{R_{total}} \right)
-$$
+> **S_minted = D * (S_total / R_total)**
 
 ### Boundary Condition:
-$$
-\text{If } S_{total} = 0, \quad S_{minted} = D
-$$
+
+> **If S_total = 0, then S_minted = D**
 
 ### Rounding Attack Mitigation:
 To protect existing liquidity providers against fractional share draining (inflation attacks), the contract strictly **rounds down** on deposits using the `checked_div` operator. Any decimal fractional remainder is permanently committed to the vault reserve, boosting backing value for all existing providers.
@@ -24,11 +21,9 @@ To protect existing liquidity providers against fractional share draining (infla
 
 ## 2. Dynamic Share Redemption Payout Formula
 
-When a liquidity provider burns $S_{redeem}$ shares to withdraw their capital, the payout assets $A_{payout}$ are determined proportionally:
+When a liquidity provider burns `S_redeem` shares to withdraw their capital, the payout assets `A_payout` are determined proportionally:
 
-$$
-A_{payout} = S_{redeem} \times \left( \frac{R_{total}}{S_{total}} \right)
-$$
+> **A_payout = S_redeem * (R_total / S_total)**
 
 ### Rounding Safeguards:
 During withdrawal burning operations, decimal calculations strictly **round up** (by adding 1 to the integer division if a remainder exists). This acts as a mathematical safeguard, guaranteeing that the vault never distributes more backing stablecoins than the LP's shares mathematically represent.
@@ -50,10 +45,8 @@ let next_shares = current_shares
 
 ## 4. Yield Compounding Model
 
-As registered Cash-In/Cash-Out (CICO) anchors generate corridor commissions, they programmatically invoke `distribute_yield`. This directly inflates $R_{total}$ without increasing $S_{total}$:
+As registered Cash-In/Cash-Out (CICO) anchors generate corridor commissions, they programmatically invoke `distribute_yield`. This directly inflates `R_total` without increasing `S_total`:
 
-$$
-\text{Yield Allocation Rate } = \frac{R_{total} + \Delta R}{S_{total}}
-$$
+> **Yield Allocation Rate = (R_total + ΔR) / S_total**
 
 As a result, each existing LP share represents a progressively larger amount of USDC stablecoin reserves over time, driving organic compound yield distribution.
