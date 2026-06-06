@@ -137,30 +137,31 @@ AnchorVault is natively and exclusively built on the Stellar network. We utilize
 ### Integration Track Specifics & Budget
 
 **Budget:***
-$10,000
+$30,000
 
 **Integration Track Specifics:***
-We are integrating with two recommended building blocks from the Integration List:
-1. **Stellar Wallets Kit**: To standardize user onboarding, wallet management, and provide seamless multi-wallet connection options (LOBSTR, xBull, etc.) for our Liquidity Providers.
-2. **Freighter Connect**: As our primary wallet integration for native Soroban smart contract interactions, ensuring secure, non-custodial XDR signing for complex transactions like deposits, draws, and repayments.
+We are integrating with three recommended building blocks from the Integration List:
+1. **Anchor Platform**: To build a standardized SEP-24/SEP-31 interface that allows traditional payment anchors and fintechs to directly plug into our liquidity vault for on/off-ramp settlement.
+2. **Stellar Wallets Kit**: To standardize user onboarding, wallet management, and provide seamless multi-wallet connection options (LOBSTR, xBull, etc.) for our Liquidity Providers.
+3. **Freighter Connect**: As our primary wallet integration for native Soroban smart contract interactions, ensuring secure, non-custodial XDR signing for complex transactions like deposits, draws, and repayments.
 
 **Tranche #1 Deliverables:***
-Core integration of the Stellar Wallets Kit and Freighter Connect into the AnchorVault DeFi portal. This includes building the wallet connection UI, handling user state across the application, and successfully simulating and signing Soroban XDR transactions natively within the browser using the Freighter API.
+Core integration of the Stellar Wallets Kit and Freighter Connect into the AnchorVault DeFi portal. This includes building the wallet connection UI, handling user state across the application, and successfully simulating and signing Soroban XDR transactions natively within the browser using the Freighter API. We will also begin initial environment setup for the Anchor Platform.
 
 **Tranche #1 Completion Date:***
 30/06/2026
 
 **Tranche #2 Deliverables:***
-Mainnet optimization and rigorous edge-case testing of the wallet integrations. This includes handling wallet disconnects, rejected signatures, insufficient fee balances, and UI polish for the transaction progress indicators. We will also ensure complete cross-compatibility with other wallets supported by the Stellar Wallets Kit.
+Deployment and configuration of the Stellar Anchor Platform. We will map our on-chain Vault logic to SEP-24 and SEP-31 standard endpoints, allowing testnet anchors to simulate drawing settlement liquidity using standardized API calls rather than direct smart contract interactions.
 
 **Tranche #2 Completion Date:***
-15/07/2026
+30/07/2026
 
 **Tranche #3 Deliverables:***
-Final production release, technical documentation, and ecosystem marketing. We will publish comprehensive developer guides detailing how we implemented these wallet integrations within our architecture, formally launch the application, and execute a marketing campaign highlighting our seamless user onboarding experience.
+Mainnet optimization, rigorous edge-case testing of the Anchor Platform integration, and final production release. We will publish comprehensive developer guides detailing how Anchors can use the Anchor Platform to connect to AnchorVault, formally launch the application, and execute a marketing campaign highlighting our seamless user and anchor onboarding experience.
 
 **Tranche #3 Completion Date:***
-30/07/2026
+30/08/2026
 
 **How did you hear about the Stellar x CV Labs Accelerator?:***
 Stellar Developer Discord / Community Forums
