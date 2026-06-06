@@ -1787,11 +1787,21 @@ export default function App() {
                             <div className="text-white flex items-center gap-2">[SUBMIT] Broadcasting to Stellar network... <Loader2 className="h-3 w-3 animate-spin" /></div></>
                           )}
                           {txStep === "success" && (
-                            <><div className="text-green-400">[OK] Transaction confirmed on ledger #{txLedger}</div>
-                            <div className="text-green-400 font-semibold">[CONFIRMED] On-chain settlement finalized!</div>
-                            <a href={getStellarExpertTxUrl(txHash)} target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline break-all">
-                              TX: {txHash} ↗
-                            </a></>
+                            <>
+                              <div className="text-green-400">[OK] Transaction confirmed on ledger #{txLedger}</div>
+                              <div className="text-green-400 font-semibold">[CONFIRMED] On-chain settlement finalized!</div>
+                              
+                              {dashboardTab === "deposit" && (
+                                <div className="mt-2 p-3 bg-[#00e5ff]/10 border border-[#00e5ff]/30 rounded-lg animate-pulse">
+                                  <div className="text-[#00e5ff] font-bold text-sm">🎉 CONGRATULATIONS!</div>
+                                  <div className="text-white mt-1">You just earned <span className="font-bold text-[#00e5ff]">1,000 $VAULT</span> Governance Tokens as a Liquidity Mining reward!</div>
+                                </div>
+                              )}
+                              
+                              <a href={getStellarExpertTxUrl(txHash)} target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline break-all mt-2 block">
+                                TX: {txHash} ↗
+                              </a>
+                            </>
                           )}
                           {txStep === "error" && (
                             <div className="text-red-400 font-semibold">[ERROR] {txError}</div>
