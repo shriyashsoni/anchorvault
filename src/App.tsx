@@ -542,6 +542,15 @@ export default function App() {
       setTxProgress(10);
       setTxError("");
 
+      // --- SMART AUTO-REGISTRATION ---
+      // If the user hasn't been whitelisted by the protocol yet, we automatically deploy
+      // an admin transaction to register them with a default 10k USDC credit line.
+      if (!userAnchorState || !userAnchorState.isWhitelisted) {
+        console.log("Anchor not registered. Auto-registering...");
+        await registerAnchorOnChain(walletAddress, "10000");
+        setTxProgress(20);
+      }
+
       const txXDR = await buildLockCollateralTransaction(walletAddress, lockCollateralAmount);
       setTxProgress(30);
       setTxStep("signing");
