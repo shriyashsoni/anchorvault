@@ -146,7 +146,7 @@ We are integrating with three recommended building blocks from the Integration L
 3. **Freighter Connect**: As our primary wallet integration for native Soroban smart contract interactions, ensuring secure, non-custodial XDR signing for complex transactions like deposits, draws, and repayments.
 
 **Tranche #1 Deliverables:***
-Core integration of the Stellar Wallets Kit and Freighter Connect into the AnchorVault DeFi portal. This includes building the wallet connection UI, handling user state across the application, and successfully simulating and signing Soroban XDR transactions natively within the browser using the Freighter API. We will also begin initial environment setup for the Anchor Platform.
+Core integration of the Stellar Wallets Kit and Freighter Connect into the AnchorVault DeFi portal. This includes building the wallet connection UI, handling user state across the application, and successfully simulating and signing Soroban XDR transactions natively within the browser using the Freighter API. **Crucially, we will implement WalletConnect and native mobile deep-link detection, allowing users to seamlessly connect mobile wallets (like LOBSTR and xBull) directly from their smartphones.** We will also begin initial environment setup for the Anchor Platform.
 
 **Tranche #1 Completion Date:***
 30/06/2026
