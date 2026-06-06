@@ -52,6 +52,7 @@ import {
   fundWithFriendbot,
   offsetDefaultedDebtOnChain,
   adjustCreditLimitOnChain,
+  buildNativeSwapTransaction,
   type WalletBalances,
   type PoolState,
   type TxRecord,
@@ -379,7 +380,7 @@ export default function App() {
 
   // Interactive dashboard states
   const [showDashboard, setShowDashboard] = useState(false);
-  const [dashboardTab, setDashboardTab] = useState<"overview" | "deposit" | "withdraw" | "registry" | "wallet" | "history" | "anchor-portal" | "sandbox" | "ai-copilot">("overview");
+  const [dashboardTab, setDashboardTab] = useState<"overview" | "deposit" | "withdraw" | "registry" | "wallet" | "history" | "anchor-portal" | "sandbox" | "ai-copilot" | "quick-swap">("overview");
   
   // Wallet state
   const [walletConnected, setWalletConnected] = useState(false);
@@ -419,6 +420,7 @@ export default function App() {
   const [releaseCollateralAmount, setReleaseCollateralAmount] = useState("");
   const [drawAmount, setDrawAmount] = useState("");
   const [repayAmount, setRepayAmount] = useState("");
+  const [swapAmountXlm, setSwapAmountXlm] = useState("");
 
   const [txStep, setTxStep] = useState<"idle" | "building" | "signing" | "submitting" | "confirming" | "success" | "error">("idle");
   const [txProgress, setTxProgress] = useState(0);
@@ -478,6 +480,45 @@ export default function App() {
       console.error("[Registry] Whitelisting failed:", err);
       setSandboxError(err.message || "Failed to whitelist as anchor.");
       setRegisterStatus("error");
+    }
+  };
+
+  const executeQuickSwap = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseFloat(swapAmountXlm);
+    if (isNaN(val) || val <= 0) return;
+
+    try {
+      setTxStep("building");
+      setTxProgress(10);
+      setTxError("");
+
+      const txXDR = await buildNativeSwapTransaction(walletAddress, swapAmountXlm);
+      setTxProgress(30);
+      setTxStep("signing");
+
+      const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
+        networkPassphrase: "Public Global Stellar Network ; September 2015",
+        address: walletAddress,
+      });
+      setTxProgress(60);
+      setTxStep("submitting");
+
+      const result = await submitTransaction(signedTxXdr);
+      setTxProgress(90);
+      setTxStep("confirming");
+
+      setTxHash(result.hash);
+      setTxLedger(result.ledger);
+      setTxProgress(100);
+      setTxStep("success");
+      setSwapAmountXlm("");
+
+      setTimeout(() => refreshOnChainData(), 3000);
+    } catch (err: any) {
+      console.error("[Quick Swap] Swap failed:", err);
+      setTxError(err.message || "Swap transaction failed");
+      setTxStep("error");
     }
   };
 
@@ -1466,6 +1507,7 @@ export default function App() {
                 {[
                   { id: "overview", icon: <Activity className="h-4 w-4" />, label: "Overview" },
                   { id: "deposit", icon: <Coins className="h-4 w-4" />, label: "Deposit & Earn" },
+                  { id: "quick-swap", icon: <RefreshCw className="h-4 w-4 text-emerald-400" />, label: "Quick Swap (Zapper)" },
                   { id: "withdraw", icon: <ArrowDownLeft className="h-4 w-4" />, label: "Withdraw" },
                   { id: "anchor-portal", icon: <Globe className="h-4 w-4" />, label: "Anchor Operations" },
                   { id: "sandbox", icon: <RefreshCw className="h-4 w-4" />, label: "Stellar Faucet/Sandbox" },
@@ -1761,6 +1803,123 @@ export default function App() {
                       </div>
                     )}
 
+                  </div>
+                  </div>
+                )}
+
+                {/* 2.5 QUICK SWAP (ZAPPER) TAB */}
+                {dashboardTab === "quick-swap" && (
+                  <div className="flex flex-col gap-6">
+                    <div className="bg-neutral-950 border border-white/5 rounded-2xl p-5">
+                      <div className="mb-6 border-b border-white/5 pb-4">
+                        <h4 className="font-semibold text-xl flex items-center gap-3 text-white">
+                          <RefreshCw className="h-5 w-5 text-emerald-400" /> Native Quick Swap (Zapper)
+                        </h4>
+                        <p className="text-sm text-neutral-400 mt-2">
+                          Instantly swap XLM for USDC natively via the Stellar Decentralized Exchange (DEX). 
+                          Zero Anchor fees, auto-routing, and smart trustline management built-in.
+                        </p>
+                      </div>
+
+                      <div className="max-w-md mx-auto bg-black/60 border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        {/* decorative glowing orb */}
+                        <div className="absolute top-0 right-0 -mr-10 -mt-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                        <form onSubmit={executeQuickSwap} className="flex flex-col gap-4 relative z-10">
+                          
+                          <div className="flex flex-col gap-2">
+                            <div className="flex justify-between items-center px-1">
+                              <label className="text-[11px] text-neutral-400 font-semibold uppercase tracking-wider">You Pay</label>
+                              <span className="text-[10px] text-emerald-400 font-mono">Balance: {balances.xlm} XLM</span>
+                            </div>
+                            <div className="relative group">
+                              <input type="number" required value={swapAmountXlm} onChange={(e) => setSwapAmountXlm(e.target.value)}
+                                placeholder="0.00" step="any" min="0" 
+                                className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-4 text-xl font-bold text-white focus:outline-none focus:border-emerald-500 transition-colors" />
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-black rounded-lg px-3 py-1.5 flex items-center gap-2 border border-white/5">
+                                <img src="https://stellar.org/favicon.ico" className="h-4 w-4 rounded-full filter grayscale" alt="XLM" />
+                                <span className="text-xs font-bold text-white uppercase tracking-wider">XLM</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-center -my-3 relative z-20">
+                            <div className="bg-neutral-800 border border-white/10 rounded-full p-2 text-neutral-400 shadow-md">
+                              <ArrowDown className="h-4 w-4" />
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-2">
+                            <div className="flex justify-between items-center px-1">
+                              <label className="text-[11px] text-neutral-400 font-semibold uppercase tracking-wider">You Receive (Est.)</label>
+                              <span className="text-[10px] text-neutral-500 font-mono">Balance: {balances.usdc} USDC</span>
+                            </div>
+                            <div className="relative">
+                              <input type="text" disabled value={swapAmountXlm ? `~${(parseFloat(swapAmountXlm) * 0.1).toFixed(4)}` : "0.00"}
+                                className="w-full bg-neutral-900/50 border border-white/5 rounded-xl px-4 py-4 text-xl font-bold text-neutral-500 cursor-not-allowed" />
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-500/10 rounded-lg px-3 py-1.5 flex items-center gap-2 border border-blue-500/20">
+                                <div className="h-4 w-4 bg-blue-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white leading-none">$</div>
+                                <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">USDC</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center bg-emerald-500/5 rounded-xl p-3 border border-emerald-500/10 mt-2">
+                            <span className="text-[10px] text-neutral-400 font-mono uppercase">Routing DEX</span>
+                            <span className="text-[10px] text-emerald-400 font-bold font-mono flex items-center gap-1">
+                              <Activity className="h-3 w-3" /> Auto-Best Rate
+                            </span>
+                          </div>
+
+                          <button type="submit" disabled={!["idle", "error", "success"].includes(txStep) || !walletConnected}
+                            className="w-full bg-emerald-500 text-black font-extrabold py-4 rounded-xl hover:bg-emerald-400 active:scale-95 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 cursor-pointer mt-2 text-sm uppercase tracking-wider flex items-center justify-center gap-2">
+                            <RefreshCw className={`h-4 w-4 ${!["idle", "error", "success"].includes(txStep) ? "animate-spin" : ""}`} />
+                            {!walletConnected ? "Connect Wallet" : "Swap XLM to USDC"}
+                          </button>
+
+                        </form>
+                      </div>
+
+                      {/* Display Real Transaction Status for Quick Swap too */}
+                      {txStep !== "idle" && (
+                        <div className="mt-8 bg-black/50 border border-emerald-500/20 rounded-2xl p-5 flex flex-col gap-4">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-neutral-400">Zapper Status</span>
+                            <span className="font-mono text-emerald-400 uppercase font-semibold">
+                              {txStep === "building" && "building transaction XDR..."}
+                              {txStep === "signing" && "awaiting wallet signature..."}
+                              {txStep === "submitting" && "submitting to network..."}
+                              {txStep === "confirming" && "confirming on ledger..."}
+                              {txStep === "success" && "✓ swap confirmed on-chain!"}
+                              {txStep === "error" && "✗ transaction failed"}
+                            </span>
+                          </div>
+
+                          <div className="bg-black/90 p-4 rounded-xl border border-white/5 font-mono text-[11px] text-neutral-300 flex flex-col gap-2 min-h-[100px]">
+                            {txStep === "error" && txError && (
+                              <div className="flex items-start justify-between border-t border-red-500/10 pt-1.5 mt-1">
+                                <div className="text-red-400 font-sans text-[11px] leading-relaxed pr-4">
+                                  ⚠️ <strong>Execution Failed:</strong> {txError}
+                                </div>
+                                <button onClick={() => setTxStep("idle")} type="button" className="text-[10px] bg-red-500/10 text-red-400 px-2.5 py-1 rounded-md hover:bg-red-500/20 active:scale-95 transition-all shrink-0">
+                                  Dismiss Error
+                                </button>
+                              </div>
+                            )}
+                            {txStep === "success" && txHash && (
+                              <div className="text-emerald-400">
+                                [SUCCESS] Swap executed successfully. You received USDC!
+                                <br />
+                                <a href={getStellarExpertTxUrl(txHash)} target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">
+                                  View TX on Stellar Expert ↗
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
                   </div>
                 )}
 

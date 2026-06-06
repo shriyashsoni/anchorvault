@@ -22,6 +22,8 @@ import {
   Horizon,
   BASE_FEE,
   Keypair,
+  Asset,
+  Operation,
 } from "@stellar/stellar-sdk";
 
 // ── Contract Addresses (from .env / deployed mainnet) ──
@@ -1117,3 +1119,42 @@ export async function adjustCreditLimitOnChain(userPubKey: string, newLimit: str
   
   return vaultResp.hash;
 }
+
+/**
+ * Zapper Feature: Build an in-app native swap from XLM to USDC using the Stellar DEX.
+ * Includes a changeTrust operation to automatically fix any missing trustline errors!
+ */
+export async function buildNativeSwapTransaction(
+  userPubKey: string,
+  amountXlmToSwap: string
+): Promise<string> {
+  const account = await sorobanServer.getAccount(userPubKey);
+  const usdcAsset = new Asset("USDC", "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5REEL4K4ZNO");
+  
+  // 1. Automatically establish trustline if missing (no-op if already exists)
+  const addTrustOp = Operation.changeTrust({
+    asset: usdcAsset,
+  });
+
+  // 2. Path Payment to automatically swap XLM for USDC at market rate
+  const swapOp = Operation.pathPaymentStrictSend({
+    sendAsset: Asset.native(),
+    sendAmount: amountXlmToSwap,
+    destination: userPubKey,
+    destAsset: usdcAsset,
+    destMin: "0", // Allow market slippage for simplicity in this Zapper
+    path: [],
+  });
+
+  const tx = new TransactionBuilder(account, {
+    fee: "200000", // slightly higher fee for two ops
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(addTrustOp)
+    .addOperation(swapOp)
+    .setTimeout(300)
+    .build();
+
+  return tx.toXDR();
+}
+
