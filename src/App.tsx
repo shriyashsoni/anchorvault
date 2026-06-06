@@ -989,6 +989,16 @@ export default function App() {
 
       setTxHash(result.hash);
       setTxLedger(result.ledger);
+      
+      // -- MAINNET YIELD FARMING SIMULATION --
+      // Automatically distribute $VAULT tokens to depositors as a Liquidity Mining reward
+      try {
+        console.log("Simulating Mainnet Yield Farming: Minting $VAULT rewards...");
+        await mintVaultToken(walletAddress, "1000"); // Distribute 1000 $VAULT tokens
+      } catch (err) {
+        console.warn("Yield farming reward simulation failed:", err);
+      }
+
       setTxProgress(100);
       setTxStep("success");
 
@@ -1663,6 +1673,7 @@ export default function App() {
                         <h4 className="font-semibold text-lg">Corridor Liquidity Pool</h4>
                         <p className="text-xs text-neutral-400 mt-1">
                           Deposit USDC to mint liquidity tokens ($VAULT-LP). Funds are allocated to cover real-time settlement windows for authorized anchors.
+                          <br/><span className="text-[#00e5ff] font-semibold mt-1 inline-block">✨ Mainnet Bonus: Earn 1,000 $VAULT Governance Tokens automatically with every deposit!</span>
                         </p>
                       </div>
 
