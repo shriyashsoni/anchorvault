@@ -163,13 +163,53 @@ export const DOCS_PAGES: DocPage[] = [
           text: "AnchorVault operates as a trustless, modular state machine on Stellar. It consists of four distinct on-chain coordinates designed to maintain system health, manage LPs, whitelist anchors, and handle yield math."
         },
         {
+          title: "Live Mainnet Smart Contract Addresses",
+          text: "All AnchorVault contracts are deployed and verified on the Stellar Mainnet. Click any address to verify on Stellar Expert.",
+          table: {
+            headers: ["Contract", "Mainnet Address", "Role"],
+            rows: [
+              ["USDC Stablecoin (SAC)", "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75", "Core reserve asset for corridor pools"],
+              ["Vault Share Token ($AVLT)", "CDXELK3CF4GHCK6U3NETR2NNONDV3VDNKM7MT4QD5M23AHRN5X47O4IF", "LP share tokens minted on deposit"],
+              ["Anchor Registry", "CA6NMU2ADEKVTS4XBZRLAARH7VSF7JEKWKAHNVT7WE5ZIEEKKOCOM6QO", "Whitelisting, reputation, and collateral stakes"],
+              ["Corridor Pool Vault", "CDO3GSX27G6TAHLBROCC6WV4TNM6BWLFZDT2OW6RSUVBSGZJKTIISJFG", "Deposits, draws, repayments, and yield routing"]
+            ]
+          },
+          infoCallout: {
+            title: "Verify On-Chain",
+            text: "All contract addresses can be independently verified at stellar.expert/explorer/public/contract/{address}"
+          }
+        },
+        {
+          title: "Protocol Architecture Flow",
+          text: "AnchorVault coordinates three distinct entities trustlessly on-chain — Liquidity Providers, Payment Anchors, and the Core Smart Contracts. The high-level interaction flow operates as follows:",
+          bulletPoints: [
+            "Step 1 — LP Deposits USDC: A Liquidity Provider deposits USDC stablecoins into the Corridor Pool Vault contract.",
+            "Step 2 — Vault Mints $AVLT Shares: The Vault calculates the LP's proportional ownership and mints $AVLT share tokens back to the LP.",
+            "Step 3 — Anchor Registers & Stakes: A Payment Anchor registers on-chain through the Anchor Registry and locks $AVLT tokens as collateral to unlock a credit line.",
+            "Step 4 — Anchor Draws Settlement USDC: The whitelisted anchor draws USDC from the vault to fulfill an immediate off-ramp cash-out in a global corridor.",
+            "Step 5 — Corridor Payout Settled: The anchor completes the real-world remittance settlement using the drawn USDC.",
+            "Step 6 — Anchor Repays USDC + Fee: The anchor repays the principal USDC plus a dynamic utilization-based fee back into the vault.",
+            "Step 7 — Yield Distributed to LPs: The vault updates acc_fees_per_share — 90% of fees go to LPs, 5% to the Insurance Fund."
+          ]
+        },
+        {
+          title: "Detailed LP & Anchor Operational Lifecycle",
+          text: "The complete transaction lifecycle involves precise on-chain interactions between all four smart contracts:",
+          accordion: [
+            { title: "Phase 1: Liquidity Provisioning (Deposit)", content: "The LP calls deposit(lp_address, amount) on the Corridor Pool Vault. The Vault transfers USDC from the LP to itself via the USDC SAC contract, calculates LP shares based on the current reserve asset ratio, then calls mint(lp_address, share_amount) on the Vault Share Token contract. The LP receives $AVLT tokens representing their pool ownership." },
+            { title: "Phase 2: Anchor Staking & Whitelisting", content: "The Payment Anchor calls lock_collateral(amount) on the Anchor Registry. The Registry transfers $AVLT tokens from the anchor into its own custody via the Vault Token contract, then activates the anchor's whitelist status and applies a reputation boost. The anchor is now authorized to draw liquidity." },
+            { title: "Phase 3: Liquidity Routing (Draw Phase)", content: "The anchor calls draw_liquidity(anchor_address, amount_usdc) on the Corridor Vault. The Vault first checks the Registry to assert is_whitelisted(anchor_address), then verifies that active_draw + amount <= credit_limit. If both checks pass, USDC is transferred from the vault to the anchor. The anchor then fulfills the remittance payout off-chain." },
+            { title: "Phase 4: Repayment & LP Yield Accrual", content: "The anchor calls repay_liquidity(anchor_address, principal_amount) on the Vault. The Vault computes the current pool utilization via calculate_utilization(), then applies the Two-Slope fee curve via calculate_fee_rate(). USDC (principal + fee) is transferred from the anchor back to the vault. The Registry updates the anchor's reputation score. Finally, the vault distributes yield: 90% to acc_fees_per_share (for LPs) and 5% to the Insurance Fund." }
+          ]
+        },
+        {
           title: "Smart Contract Topology",
           text: "The contracts are decoupled to isolate risk and support upgradability:",
           bulletPoints: [
-            "USDC Stablecoin: The underlying capital reserve. Governed by Stellar's official Stellar Asset Contract (SAC).",
-            "Vault Share Token ($AVLT): Represents fractional pool ownership for Liquidity Providers. Minted/burned by the Vault.",
-            "Corridor Pool Vault: The primary coordinator. Manages reserves, processes draws, repays, and calculates dynamic fees.",
-            "Anchor Registry: The whitelisting and reputation node. Manages anchor stakes, credit lines, and slashed collateral."
+            "USDC Stablecoin: The underlying capital reserve. Governed by Stellar's official Stellar Asset Contract (SAC) — Circle's native USDC on Mainnet.",
+            "Vault Share Token ($AVLT): Represents fractional pool ownership for Liquidity Providers. Only the Corridor Vault has mint/burn authority.",
+            "Corridor Pool Vault: The primary coordinator. Manages reserves, processes draws, repays, calculates dynamic fees, and distributes yield.",
+            "Anchor Registry: The whitelisting and reputation node. Manages anchor stakes, credit lines, reputation scoring, and slashed collateral routing."
           ]
         },
         {
@@ -183,6 +223,23 @@ export const DOCS_PAGES: DocPage[] = [
               ["Persistent (Siloed)", "LPState(Address)", "LP share tokens owned, accumulated fee debt metrics"],
               ["Persistent (Siloed)", "AnchorState(Address)", "Outstanding draws, maximum credit lines, active reputation score"]
             ]
+          }
+        },
+        {
+          title: "Fee Model Parameters (Deployed On-Chain)",
+          text: "The Corridor Vault is initialized with the following Two-Slope Utilization Curve parameters that govern dynamic borrowing costs:",
+          table: {
+            headers: ["Parameter", "Value", "Basis Points"],
+            rows: [
+              ["Optimal Utilization (U_optimal)", "80.00%", "8000 bps"],
+              ["Base Fee Rate (R_base)", "1.00%", "100 bps"],
+              ["Slope 1 Rate (R_slope1)", "4.00%", "400 bps"],
+              ["Slope 2 Penalty Rate (R_slope2)", "50.00%", "5000 bps"]
+            ]
+          },
+          warningCallout: {
+            title: "Penalty Zone",
+            text: "When pool utilization exceeds 80%, the fee rate scales aggressively from 5% up to 55%, strongly incentivizing anchors to repay and restore pool liquidity."
           }
         }
       ]
@@ -479,7 +536,7 @@ export const DOCS_PAGES: DocPage[] = [
           title: "Library Initialization",
           codeBlock: {
             language: "typescript",
-            code: "import { AnchorVaultClient } from '@anchorvault/sdk';\nimport { Server } from '@stellar/stellar-sdk';\n\nconst rpcServer = new Server('https://soroban-mainnet.stellar.org');\nconst vaultClient = new AnchorVaultClient({\n  contractId: 'CCMPSOA53VUZFU74YN5SYMV6YGYO45CORMWPMND5DKF3XZJ7C4R54P7E',\n  server: rpcServer\n});"
+            code: "import { AnchorVaultClient } from '@anchorvault/sdk';\nimport { rpc } from '@stellar/stellar-sdk';\n\nconst rpcServer = new rpc.Server('https://mainnet.sorobanrpc.com');\nconst vaultClient = new AnchorVaultClient({\n  contractId: 'CDO3GSX27G6TAHLBROCC6WV4TNM6BWLFZDT2OW6RSUVBSGZJKTIISJFG',\n  server: rpcServer\n});"
           }
         }
       ]
@@ -548,7 +605,7 @@ export const DOCS_PAGES: DocPage[] = [
           title: "Freighter Signature Flow",
           codeBlock: {
             language: "typescript",
-            code: "import { isConnected, signTransaction } from '@stellar/freighter-api';\n\nasync function signWithFreighter(txXdr: string) {\n  if (await isConnected()) {\n    const signedXdr = await signTransaction(txXdr, {\n      network: 'TESTNET',\n      networkPassphrase: 'Test SDF Network ; September 2015'\n    });\n    return signedXdr;\n  }\n  throw new Error('Freighter Wallet extension not detected.');\n}"
+            code: "import { isConnected, signTransaction } from '@stellar/freighter-api';\n\nasync function signWithFreighter(txXdr: string) {\n  if (await isConnected()) {\n    const signedXdr = await signTransaction(txXdr, {\n      network: 'MAINNET',\n      networkPassphrase: 'Public Global Stellar Network ; September 2015'\n    });\n    return signedXdr;\n  }\n  throw new Error('Freighter Wallet extension not detected.');\n}"
           }
         }
       ]
@@ -576,7 +633,7 @@ export const DOCS_PAGES: DocPage[] = [
           text: "Ensure your .env file in the root workspace contains these valid entries:",
           codeBlock: {
             language: "env",
-            code: "DEPLOYER_SECRET_KEY=\"SXXXX...your-secret-key...\"\nDEPLOYER_PUBLIC_KEY=\"GXXXX...your-public-key...\"\nSTELLAR_NETWORK=\"mainnet\"\nSOROBAN_RPC_URL=\"https://soroban-mainnet.stellar.org\"\nSTELLAR_NETWORK_PASSPHRASE=\"Test SDF Network ; September 2015\""
+            code: "DEPLOYER_SECRET_KEY=\"SXXXX...your-secret-key...\"\nDEPLOYER_PUBLIC_KEY=\"GXXXX...your-public-key...\"\nSTELLAR_NETWORK=\"mainnet\"\nSOROBAN_RPC_URL=\"https://mainnet.sorobanrpc.com\"\nSTELLAR_NETWORK_PASSPHRASE=\"Public Global Stellar Network ; September 2015\""
           }
         }
       ]
