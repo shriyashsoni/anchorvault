@@ -1142,7 +1142,7 @@ export async function buildNativeSwapTransaction(
     sendAmount: amountXlmToSwap,
     destination: userPubKey,
     destAsset: usdcAsset,
-    destMin: "0", // Allow market slippage for simplicity in this Zapper
+    destMin: "0.0000001", // Allow market slippage but must be strictly positive
     path: [],
   });
 
