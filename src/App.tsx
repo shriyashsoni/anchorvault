@@ -19,6 +19,7 @@ import {
   Mail
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { Helmet } from "react-helmet-async";
 import Hls from "hls.js";
 import { StellarWalletsKit, Networks } from "@creit.tech/stellar-wallets-kit";
 import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
@@ -216,6 +217,84 @@ function InfiniteSlider() {
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState<"home" | "whitepaper" | "privacy" | "terms" | "branding" | "docs">("home");
+
+  // --- SPA ROUTING / SEO FIX ---
+  useEffect(() => {
+    // On mount, check if there's a specific route in the pathname
+    const path = window.location.pathname.replace("/", "");
+    if (["whitepaper", "privacy", "terms", "branding", "docs"].includes(path)) {
+      setCurrentView(path as any);
+    }
+
+    const handlePopState = () => {
+      const p = window.location.pathname.replace("/", "");
+      if (["whitepaper", "privacy", "terms", "branding", "docs"].includes(p)) {
+        setCurrentView(p as any);
+      } else {
+        setCurrentView("home");
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // Update URL when view changes
+  useEffect(() => {
+    const path = currentView === "home" ? "/" : `/${currentView}`;
+    if (window.location.pathname !== path) {
+      window.history.pushState({}, "", path);
+    }
+  }, [currentView]);
+
+  // Dynamic SEO mapping
+  const getSeoTags = () => {
+    const baseTitle = "AnchorVault | ";
+    switch (currentView) {
+      case "whitepaper":
+        return {
+          title: baseTitle + "Whitepaper",
+          description: "Read the official AnchorVault whitepaper to understand the protocol economics, Soroban smart contracts, and liquidity bridging mechanics.",
+          url: "https://anchorvault.xyz/whitepaper",
+          image: "https://anchorvault.xyz/og-image.png"
+        };
+      case "docs":
+        return {
+          title: baseTitle + "Documentation",
+          description: "Explore the AnchorVault technical documentation. Learn how to integrate the routing engine and deploy stablecoin anchors on Stellar.",
+          url: "https://anchorvault.xyz/docs",
+          image: "https://anchorvault.xyz/og-image.png"
+        };
+      case "privacy":
+        return {
+          title: baseTitle + "Privacy Policy",
+          description: "Learn about how AnchorVault handles your data, on-chain privacy, and our commitment to decentralized security.",
+          url: "https://anchorvault.xyz/privacy",
+          image: "https://anchorvault.xyz/og-image.png"
+        };
+      case "terms":
+        return {
+          title: baseTitle + "Terms of Service",
+          description: "Review the Terms of Service for interacting with the decentralized AnchorVault protocol.",
+          url: "https://anchorvault.xyz/terms",
+          image: "https://anchorvault.xyz/og-image.png"
+        };
+      case "branding":
+        return {
+          title: baseTitle + "Brand Kit",
+          description: "Download official AnchorVault brand assets, logos, and guidelines for partners and press.",
+          url: "https://anchorvault.xyz/branding",
+          image: "https://anchorvault.xyz/og-image.png"
+        };
+      default:
+        return {
+          title: "AnchorVault | Deployed on Stellar Soroban Protocol",
+          description: "A trustless Soroban routing engine bridging idle stablecoins with Stellar anchor corridors. Deposit stablecoins, secure global remittance, and earn organic yield.",
+          url: "https://anchorvault.xyz/",
+          image: "https://anchorvault.xyz/og-image.png"
+        };
+    }
+  };
+  const seo = getSeoTags();
 
   // Newsletter Subscription states
   const [subscrEmail, setSubscrEmail] = useState("");
@@ -1057,12 +1136,39 @@ export default function App() {
   };
 
   if (currentView === "docs") {
-    return <CustomDocsView onBackToHome={() => setCurrentView("home")} />;
+    return (
+      <>
+        <Helmet>
+          <title>{seo.title}</title>
+          <meta name="description" content={seo.description} />
+          <link rel="canonical" href={seo.url} />
+          <meta property="og:title" content={seo.title} />
+          <meta property="og:description" content={seo.description} />
+          <meta property="og:url" content={seo.url} />
+          <meta property="og:image" content={seo.image} />
+          <meta property="twitter:title" content={seo.title} />
+          <meta property="twitter:description" content={seo.description} />
+          <meta property="twitter:image" content={seo.image} />
+        </Helmet>
+        <CustomDocsView onBackToHome={() => setCurrentView("home")} />
+      </>
+    );
   }
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center overflow-x-hidden w-full font-sans antialiased">
-      
+      <Helmet>
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+        <link rel="canonical" href={seo.url} />
+        <meta property="og:title" content={seo.title} />
+        <meta property="og:description" content={seo.description} />
+        <meta property="og:url" content={seo.url} />
+        <meta property="og:image" content={seo.image} />
+        <meta property="twitter:title" content={seo.title} />
+        <meta property="twitter:description" content={seo.description} />
+        <meta property="twitter:image" content={seo.image} />
+      </Helmet>
       {/* NAVBAR: Absolute, over hero */}
       <header className="absolute top-0 left-0 right-0 z-20 px-6 lg:px-[120px] py-[16px] transparent font-manrope">
         <nav className="flex items-center justify-between w-full max-w-[1320px] mx-auto">
@@ -1446,7 +1552,7 @@ export default function App() {
               <div className="flex flex-col gap-4">
                 <span className="text-[13px] font-bold tracking-wider text-white uppercase font-sans">Contact</span>
                 <div className="flex flex-col gap-2 font-sans text-sm">
-                  <a href="mailto:support@anchorvault.co" className="text-neutral-400 hover:text-white transition-colors duration-200">support@anchorvault.co</a>
+                  <a href="mailto:support@anchorvault.xyz" className="text-neutral-400 hover:text-white transition-colors duration-200">support@anchorvault.xyz</a>
                   <a href="https://x.com/Anchor_Vault" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors duration-200">Official X (Twitter)</a>
                 </div>
               </div>
@@ -3297,7 +3403,7 @@ function BrandingView() {
       {/* Footer support notice */}
       <div className="rounded-xl border border-white/5 bg-white/2 p-5 text-center mt-6 font-sans">
         <p className="text-xs text-neutral-400 leading-relaxed font-light">
-          Need custom visual formats, raw vector SVGs, or editorial press permissions? Contact our core development group at <a href="mailto:support@anchorvault.co" className="text-purple-300 underline font-semibold">support@anchorvault.co</a>.
+          Need custom visual formats, raw vector SVGs, or editorial press permissions? Contact our core development group at <a href="mailto:support@anchorvault.xyz" className="text-purple-300 underline font-semibold">support@anchorvault.xyz</a>.
         </p>
       </div>
 
