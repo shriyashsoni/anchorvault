@@ -1129,7 +1129,7 @@ export async function buildNativeSwapTransaction(
   amountXlmToSwap: string
 ): Promise<string> {
   const account = await sorobanServer.getAccount(userPubKey);
-  const usdcAsset = new Asset("USDC", "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5REEL4K4ZNO");
+  const usdcAsset = new Asset("USDC", "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
   
   // 1. Automatically establish trustline if missing (no-op if already exists)
   const addTrustOp = Operation.changeTrust({
