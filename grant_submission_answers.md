@@ -50,6 +50,8 @@ Post-launch and Pre-revenue
  (or https://x.com/shriyashsoni_)
 
 **Technical Architecture Document:***
+*(Note for SCF Judges: Our architecture document explicitly details our integration with **Stellar Wallets Kit** and **Freighter Connect** from the SCF Integration List. You can find this directly on the Architecture page linked below).*
+
 **Main Architecture & Getting Started**
 * Introduction: https://www.anchorvault.xyz/docs/introduction
 * Quickstart: https://www.anchorvault.xyz/docs/quickstart

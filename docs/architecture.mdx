@@ -32,6 +32,23 @@ graph TD
 
 ---
 
+## SCF Ecosystem Integrations
+
+AnchorVault is submitted under the **SCF Build Integration Track**. To provide a seamless, secure, and robust experience for our users, AnchorVault deeply integrates with the following officially recommended Stellar building blocks:
+
+<CardGroup cols={2}>
+  <Card title="Stellar Wallets Kit" icon="wallet">
+    **Primary Wallet Gateway**
+    AnchorVault utilizes the [Stellar Wallets Kit](https://github.com/Creit-Tech/Stellar-Wallets-Kit) as our core authentication and connection layer. This allows Liquidity Providers and Anchors to securely connect using their preferred wallet ecosystem (Freighter, LOBSTR, xBull) while standardizing our transaction signing payloads.
+  </Card>
+  <Card title="Freighter Connect" icon="plug">
+    **Native Soroban Signing**
+    For our primary smart contract interactions (Deposits, Draws, Repayments), AnchorVault relies natively on [Freighter API](https://docs.freighter.app/) to simulate, sign, and submit Soroban XDR transactions directly from the user's browser without compromising private keys.
+  </Card>
+</CardGroup>
+
+---
+
 ## Smart Contract Topology
 
 The protocol consists of **four on-chain contracts** that interact in a coordinated manner:
