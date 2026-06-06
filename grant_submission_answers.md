@@ -131,3 +131,39 @@ AnchorVault is natively and exclusively built on the Stellar network. We utilize
 
 **Thumbnail:***
 [Please upload the AnchorVault logo/thumbnail from your `logo` directory]
+
+---
+
+### Integration Track Specifics & Budget
+
+**Budget:***
+$10,000
+
+**Integration Track Specifics:***
+We are integrating with two recommended building blocks from the Integration List:
+1. **Stellar Wallets Kit**: To standardize user onboarding, wallet management, and provide seamless multi-wallet connection options (LOBSTR, xBull, etc.) for our Liquidity Providers.
+2. **Freighter Connect**: As our primary wallet integration for native Soroban smart contract interactions, ensuring secure, non-custodial XDR signing for complex transactions like deposits, draws, and repayments.
+
+**Tranche #1 Deliverables:***
+Core integration of the Stellar Wallets Kit and Freighter Connect into the AnchorVault DeFi portal. This includes building the wallet connection UI, handling user state across the application, and successfully simulating and signing Soroban XDR transactions natively within the browser using the Freighter API.
+
+**Tranche #1 Completion Date:***
+30/06/2026
+
+**Tranche #2 Deliverables:***
+Mainnet optimization and rigorous edge-case testing of the wallet integrations. This includes handling wallet disconnects, rejected signatures, insufficient fee balances, and UI polish for the transaction progress indicators. We will also ensure complete cross-compatibility with other wallets supported by the Stellar Wallets Kit.
+
+**Tranche #2 Completion Date:***
+15/07/2026
+
+**Tranche #3 Deliverables:***
+Final production release, technical documentation, and ecosystem marketing. We will publish comprehensive developer guides detailing how we implemented these wallet integrations within our architecture, formally launch the application, and execute a marketing campaign highlighting our seamless user onboarding experience.
+
+**Tranche #3 Completion Date:***
+30/07/2026
+
+**How did you hear about the Stellar x CV Labs Accelerator?:***
+Stellar Developer Discord / Community Forums
+
+**If you have been referred by one of the Stellar or CV VC mentors/advisors/team, please fill in the name here.:**
+N/A
