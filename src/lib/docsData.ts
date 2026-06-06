@@ -52,8 +52,8 @@ export const DOCS_PAGES: DocPage[] = [
       sections: [
         {
           infoCallout: {
-            title: "Stellar Testnet Deployed",
-            text: "AnchorVault is currently live on the Stellar Testnet. Multi-corridor testing is fully operational."
+            title: "Stellar Mainnet Deployed",
+            text: "AnchorVault is currently live on the Stellar Mainnet. Multi-corridor testing is fully operational."
           },
           text: "AnchorVault is a production-grade, decentralized liquidity protocol designed to bridge Liquidity Providers (LPs) with authorized off-ramp payment anchors to facilitate instant, cross-border payments. By locking stablecoins in corridor pools, LPs earn organic yield from actual remittance settlements."
         },
@@ -91,7 +91,7 @@ export const DOCS_PAGES: DocPage[] = [
       type: "rich",
       sections: [
         {
-          text: "Follow this guide to set up your developer environment and run the complete AnchorVault protocol locally or on the Stellar Testnet in under 10 minutes."
+          text: "Follow this guide to set up your developer environment and run the complete AnchorVault protocol locally or on the Stellar Mainnet in under 10 minutes."
         },
         {
           title: "1. Prerequisites",
@@ -112,8 +112,8 @@ export const DOCS_PAGES: DocPage[] = [
           }
         },
         {
-          title: "3. Generate and Fund Testnet Keys",
-          text: "Generate secure keys and fund them with 10k testnet XLM via Stellar Friendbot:",
+          title: "3. Generate and Fund Mainnet Keys",
+          text: "Generate secure keys and fund them with 10k mainnet XLM via Stellar Friendbot:",
           codeBlock: {
             language: "bash",
             filename: "Terminal",
@@ -479,7 +479,7 @@ export const DOCS_PAGES: DocPage[] = [
           title: "Library Initialization",
           codeBlock: {
             language: "typescript",
-            code: "import { AnchorVaultClient } from '@anchorvault/sdk';\nimport { Server } from '@stellar/stellar-sdk';\n\nconst rpcServer = new Server('https://soroban-testnet.stellar.org');\nconst vaultClient = new AnchorVaultClient({\n  contractId: 'CCMPSOA53VUZFU74YN5SYMV6YGYO45CORMWPMND5DKF3XZJ7C4R54P7E',\n  server: rpcServer\n});"
+            code: "import { AnchorVaultClient } from '@anchorvault/sdk';\nimport { Server } from '@stellar/stellar-sdk';\n\nconst rpcServer = new Server('https://soroban-mainnet.stellar.org');\nconst vaultClient = new AnchorVaultClient({\n  contractId: 'CCMPSOA53VUZFU74YN5SYMV6YGYO45CORMWPMND5DKF3XZJ7C4R54P7E',\n  server: rpcServer\n});"
           }
         }
       ]
@@ -569,14 +569,14 @@ export const DOCS_PAGES: DocPage[] = [
       type: "rich",
       sections: [
         {
-          text: "Before launching contract deployments to the Stellar Testnet, make sure you configure your network credentials."
+          text: "Before launching contract deployments to the Stellar Mainnet, make sure you configure your network credentials."
         },
         {
           title: "Secure Environmental File (.env)",
           text: "Ensure your .env file in the root workspace contains these valid entries:",
           codeBlock: {
             language: "env",
-            code: "DEPLOYER_SECRET_KEY=\"SXXXX...your-secret-key...\"\nDEPLOYER_PUBLIC_KEY=\"GXXXX...your-public-key...\"\nSTELLAR_NETWORK=\"testnet\"\nSOROBAN_RPC_URL=\"https://soroban-testnet.stellar.org\"\nSTELLAR_NETWORK_PASSPHRASE=\"Test SDF Network ; September 2015\""
+            code: "DEPLOYER_SECRET_KEY=\"SXXXX...your-secret-key...\"\nDEPLOYER_PUBLIC_KEY=\"GXXXX...your-public-key...\"\nSTELLAR_NETWORK=\"mainnet\"\nSOROBAN_RPC_URL=\"https://soroban-mainnet.stellar.org\"\nSTELLAR_NETWORK_PASSPHRASE=\"Test SDF Network ; September 2015\""
           }
         }
       ]
@@ -606,9 +606,9 @@ export const DOCS_PAGES: DocPage[] = [
     }
   },
   {
-    id: "deployment/deploy-testnet",
-    title: "Deploying to Stellar Testnet",
-    sidebarTitle: "Deploy Testnet",
+    id: "deployment/deploy-mainnet",
+    title: "Deploying to Stellar Mainnet",
+    sidebarTitle: "Deploy Mainnet",
     description: "Host contracts on the Stellar network and retrieve coordinates.",
     category: "Deployment",
     icon: Server,
@@ -616,7 +616,7 @@ export const DOCS_PAGES: DocPage[] = [
       type: "rich",
       sections: [
         {
-          text: "Deploy optimized binaries to Stellar Testnet, register addresses, and automatically generate frontend configuration hooks."
+          text: "Deploy optimized binaries to Stellar Mainnet, register addresses, and automatically generate frontend configuration hooks."
         },
         {
           title: "Automated Deploy Script",
@@ -652,7 +652,7 @@ export const DOCS_PAGES: DocPage[] = [
             code: "npm run initialize"
           },
           bulletPoints: [
-            "USDC Token: Sets token administrator permissions to allow testnet faucet minting.",
+            "USDC Token: Sets token administrator permissions to allow mainnet faucet minting.",
             "AVLT Token: Delegates mint/burn permissions to the Corridor Vault contract.",
             "Anchor Registry: Establishes a 10% (1000 bps) minimum collateral ratio requirement.",
             "Corridor Vault: Connects USDC/AVLT addresses and locks Two-Slope utilization parameters."
@@ -678,7 +678,7 @@ export const DOCS_PAGES: DocPage[] = [
           title: "Stellar CLI Registration",
           codeBlock: {
             language: "bash",
-            code: "stellar contract invoke \\\n  --id CC2C5V3L3MMK6H3T3LBNJ2ALQHVWXVV4FRQY5BPCO4BCL2EFQFOGTPXN \\\n  --source admin_identity \\\n  --network testnet \\\n  -- \\\n  register_anchor \\\n  --anchor GBF4PJKVXGAIDZCYBEGNHAODE4BM3RHIN3EZMS3XHPRHCLPT2JNZPME6 \\\n  --limit 1500000000000"
+            code: "stellar contract invoke \\\n  --id CC2C5V3L3MMK6H3T3LBNJ2ALQHVWXVV4FRQY5BPCO4BCL2EFQFOGTPXN \\\n  --source admin_identity \\\n  --network mainnet \\\n  -- \\\n  register_anchor \\\n  --anchor GBF4PJKVXGAIDZCYBEGNHAODE4BM3RHIN3EZMS3XHPRHCLPT2JNZPME6 \\\n  --limit 1500000000000"
           },
           tipCallout: {
             title: "Scaling Coordinates",

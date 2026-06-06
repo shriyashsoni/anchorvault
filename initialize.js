@@ -16,7 +16,7 @@ import * as path from 'path';
 dotenv.config();
 
 const passphrase = process.env.STELLAR_NETWORK_PASSPHRASE || 'Test SDF Network ; September 2015';
-const rpcUrl = process.env.SOROBAN_RPC_URL || 'https://soroban-testnet.stellar.org';
+const rpcUrl = process.env.SOROBAN_RPC_URL || 'https://soroban-mainnet.stellar.org';
 const secretKey = process.env.DEPLOYER_SECRET_KEY;
 
 const govTokenAddress = process.env.VAULT_GOVERNANCE_TOKEN_ADDRESS;
@@ -108,7 +108,7 @@ async function main() {
   // 1. Stellar USDC Token — admin = deployer, so they can mint/mint to testers
   console.log("=== [1/4] STELLAR USDC TOKEN ===");
   console.log(`    Contract: ${usdcAddress}`);
-  if (usdcAddress === "CCW64C4U4VIV6C4B46O72O3Q554W6T6S5W6X6V256O64X6U6V6MI75") {
+  if (usdcAddress === "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75") {
     console.log("    ℹ️ Official Circle USDC detected. Skipping initialization call.");
   } else {
     await callContract("USDCToken", usdcAddress, "initialize", [
@@ -199,7 +199,7 @@ async function main() {
   console.log(`   Anchor Registry:   ${registryAddress}`);
   console.log(`   Corridor Vault:    ${vaultAddress}`);
   console.log("   All Anchors registered live on-chain! 🚀");
-  console.log("   Protocol is LIVE on Stellar Testnet! 🚀");
+  console.log("   Protocol is LIVE on Stellar Mainnet! 🚀");
   console.log("=================================================");
 }
 

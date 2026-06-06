@@ -24,12 +24,12 @@ import {
   Keypair,
 } from "@stellar/stellar-sdk";
 
-// ── Contract Addresses (from .env / deployed testnet) ──
-export const CONTRACT_ADDRESSES = {
-  USDC: "CCOFJFH3EJOVFL2MVBYTVVVVXCDQYFTGYKHYDXR66Y6QZVNPRRLQU5VZ",
-  GOVERNANCE_TOKEN: "CDRDKAB2J2X274QPHVVWPDH6436J44575WECGG53RQ2VTGF6NFI2GIAY",
-  ANCHOR_REGISTRY: "CC2C5V3L3MMK6H3T3LBNJ2ALQHVWXVV4FRQY5BPCO4BCL2EFQFOGTPXN",
-  CORE_VAULT: "CCMPSOA53VUZFU74YN5SYMV6YGYO45CORMWPMND5DKF3XZJ7C4R54P7E",
+// ── Contract Addresses (from .env / deployed mainnet) ──
+export const CONTRACTS = {
+  USDC: "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75",
+  GOVERNANCE_TOKEN: "CDXELK3CF4GHCK6U3NETR2NNONDV3VDNKM7MT4QD5M23AHRN5X47O4IF",
+  ANCHOR_REGISTRY: "CA6NMU2ADEKVTS4XBZRLAARH7VSF7JEKWKAHNVT7WE5ZIEEKKOCOM6QO",
+  CORE_VAULT: "CDO3GSX27G6TAHLBROCC6WV4TNM6BWLFZDT2OW6RSUVBSGZJKTIISJFG",
 };
 
 export interface RegisteredAnchor {
@@ -47,29 +47,29 @@ export const ANCHOR_LIST = [
   {
     "name": "Anchora",
     "corridor": "Euro Corridor (EUR)",
-    "address": "GBF4PJKVXGAIDZCYBEGNHAODE4BM3RHIN3EZMS3XHPRHCLPT2JNZPME6"
+    "address": "GB3XSZPAZPFNBLXBM35N4VV2TAPSZVIIVOAJFEJ4V6AXUCLXEUE7UUXO"
   },
   {
     "name": "DeltaPay",
     "corridor": "Latam Corridor (BRL)",
-    "address": "GBZCRHUOYZJJNB3QSB4W6O4VWKJH36IG57K7FJIUHASR4GVDA56B3WLN"
+    "address": "GD7N2JIRZL2AOILQJ5L7HY2FTEZ3EUKOUYISY6Q7MBAS55IK2KQUM7WC"
   },
   {
     "name": "ApexRemit",
     "corridor": "APAC Corridor (SGD)",
-    "address": "GD5LD2APLOZFI4Y5CQEORRYWYYTKXMSXOR3PYQHHW52JIJ5FM7F2DG7N"
+    "address": "GBLMFM4IBR56SB7LDODVFYGA3ONQGAGUPDWZWBHCQLDZXUBFF7VPUU4Y"
   },
   {
     "name": "SkyRemit",
     "corridor": "Africa Corridor (NGN)",
-    "address": "GA2F3RI2ACKQWYWZV4MRYXDATONB5FMDX65GQPGF6IZDU5ZCAW6B6L2Z"
+    "address": "GAFSSI3CK6XGKF5OHFE4JGY6MHDGJ66EYGHBHDZXGTFMEVH2KNRZ7KX3"
   }
 ];
 
 // ── Network Config ──
-const SOROBAN_RPC_URL = "https://soroban-testnet.stellar.org";
-const HORIZON_URL = "https://horizon-testnet.stellar.org";
-const NETWORK_PASSPHRASE = Networks.TESTNET;
+const SOROBAN_RPC_URL = "https://soroban-rpc.mainnet.stellar.org";
+const HORIZON_URL = "https://horizon.stellar.org";
+const NETWORK_PASSPHRASE = Networks.PUBLIC;
 
 // ── RPC + Horizon Clients ──
 const sorobanServer = new rpc.Server(SOROBAN_RPC_URL);
@@ -563,15 +563,15 @@ export async function fetchContractEvents(contractId: string, _limit = 15): Prom
 // ──────────────────────────────────────────────────
 
 export function getStellarExpertTxUrl(hash: string): string {
-  return `https://stellar.expert/explorer/testnet/tx/${hash}`;
+  return `https://stellar.expert/explorer/public/tx/${hash}`;
 }
 
 export function getStellarExpertAccountUrl(address: string): string {
-  return `https://stellar.expert/explorer/testnet/account/${address}`;
+  return `https://stellar.expert/explorer/public/account/${address}`;
 }
 
 export function getStellarExpertContractUrl(contractId: string): string {
-  return `https://stellar.expert/explorer/testnet/contract/${contractId}`;
+  return `https://stellar.expert/explorer/public/contract/${contractId}`;
 }
 
 export function getHorizonTxUrl(hash: string): string {
@@ -579,7 +579,7 @@ export function getHorizonTxUrl(hash: string): string {
 }
 
 // ──────────────────────────────────────────────────
-//  FRIENDBOT (Fund testnet accounts)
+//  FRIENDBOT (Fund mainnet accounts)
 // ──────────────────────────────────────────────────
 
 export async function fundWithFriendbot(publicKey: string): Promise<boolean> {

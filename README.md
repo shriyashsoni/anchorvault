@@ -4,16 +4,16 @@ AnchorVault is a production-grade, decentralized liquidity protocol built on the
 
 ---
 
-## 📍 Deployed Smart Contract Addresses (Stellar Testnet)
+## 📍 Deployed Smart Contract Addresses (Stellar Mainnet)
 
-The AnchorVault protocol is fully deployed and configured on the **Stellar Testnet** at the following contract coordinates:
+The AnchorVault protocol is fully deployed and configured on the **Stellar Mainnet** at the following contract coordinates:
 
 | Contract Component | Stellar Contract Address (C...) | Role / Responsibility |
 | :--- | :--- | :--- |
-| 💵 **Stellar USDC Stablecoin** | `CCW67CUUZD4BYLOXPUM6UJCY34UCCIC2CC3V2F` | Core asset of the corridor pools (Stellar Asset Contract) |
-| 🪙 **Vault Share Token ($AVLT)** | `CCG35K57NAFGZ3EBIHEWLQEAOCNEF72DX3DQNJDJINT66GE5VW7TDTPC` | LP share representation minted dynamically during deposits |
-| 🛡️ **Anchor Registry** | `CAWO6A52CISR4JITVFVN4NDDCSJA3MI5N6XCBN5XW2AE4JU3I4NHAUGJ` | Handles anchor whitelisting, reputation score calculation, and collateral stakes |
-| 🏦 **Corridor Pool Core Vault** | `CCU3RFCKEG2OIQZMGY6C2UUQFCCN6TJDVMPNRR3D6FKRZAJGQ3EIPKJK` | Manages deposit/withdrawal arithmetic and anchor liquidity routing |
+| 💵 **Stellar USDC Stablecoin** | [`CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75`](https://stellar.expert/explorer/public/contract/CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75) | Core asset of the corridor pools (Stellar Asset Contract) |
+| 🪙 **Vault Share Token ($AVLT)** | [`CDXELK3CF4GHCK6U3NETR2NNONDV3VDNKM7MT4QD5M23AHRN5X47O4IF`](https://stellar.expert/explorer/public/contract/CDXELK3CF4GHCK6U3NETR2NNONDV3VDNKM7MT4QD5M23AHRN5X47O4IF) | LP share representation minted dynamically during deposits |
+| 🛡️ **Anchor Registry** | [`CA6NMU2ADEKVTS4XBZRLAARH7VSF7JEKWKAHNVT7WE5ZIEEKKOCOM6QO`](https://stellar.expert/explorer/public/contract/CA6NMU2ADEKVTS4XBZRLAARH7VSF7JEKWKAHNVT7WE5ZIEEKKOCOM6QO) | Handles anchor whitelisting, reputation score calculation, and collateral stakes |
+| 🏦 **Corridor Pool Core Vault** | [`CDO3GSX27G6TAHLBROCC6WV4TNM6BWLFZDT2OW6RSUVBSGZJKTIISJFG`](https://stellar.expert/explorer/public/contract/CDO3GSX27G6TAHLBROCC6WV4TNM6BWLFZDT2OW6RSUVBSGZJKTIISJFG) | Manages deposit/withdrawal arithmetic and anchor liquidity routing |
 
 ---
 
@@ -127,7 +127,7 @@ The fee rate $R$ (in basis points) changes dynamically based on whether utilizat
 
 ## 🛠️ Developer Setup & Deployment Guide
 
-Follow these steps to deploy and run AnchorVault locally or on the testnet.
+Follow these steps to deploy and run AnchorVault locally or on the mainnet.
 
 ### 1. Prerequisites
 Ensure you have the following installed on your developer machine:
@@ -145,14 +145,14 @@ npm install
 ```
 
 ### 3. Generate Secure Developer Keys
-To generate and fund a secure testnet keypair, run the secure keys utility:
+To generate and fund a secure mainnet keypair, run the secure keys utility:
 ```bash
 node setup_keys.js
 ```
-*This script will query Stellar Friendbot to credit 10,000 Testnet XLM into your wallet and write the public/secret keys securely into a local `.env` file.*
+*This script will query Stellar Friendbot to credit 10,000 Mainnet XLM into your wallet and write the public/secret keys securely into a local `.env` file.*
 
 ### 4. Compile & Deploy Smart Contracts
-Build and deploy the three Rust contracts to the Stellar Testnet:
+Build and deploy the three Rust contracts to the Stellar Mainnet:
 ```bash
 npm run deploy
 ```

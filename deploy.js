@@ -31,7 +31,7 @@ const deployerKeypair = Keypair.fromSecret(secretKey);
 const server = new rpc.Server(rpcUrl);
 
 console.log("=================================================");
-console.log(`🚀 ANCHORVAULT TESTNET DEPLOYMENT`);
+console.log(`🚀 ANCHORVAULT ${network.toUpperCase()} DEPLOYMENT`);
 console.log(`Network: ${network}`);
 console.log(`RPC Node: ${rpcUrl}`);
 console.log(`Deployer: ${deployerKeypair.publicKey()}`);
@@ -215,7 +215,7 @@ async function main() {
   if (network === 'mainnet') {
     console.log("=== [1/4] STELLAR USDC TOKEN ===");
     console.log("ℹ️ Running on MAINNET: Using official Circle USDC Stellar Asset Contract ID.");
-    usdcAddress = "CCW64C4U4VIV6C4B46O72O3Q554W6T6S5W6X6V256O64X6U6V6MI75";
+    usdcAddress = "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75";
     console.log(`  🎉 USDC Contract ID: ${usdcAddress}\n`);
   } else {
     console.log("=== [1/4] STELLAR USDC TOKEN ===");
