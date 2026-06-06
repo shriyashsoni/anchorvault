@@ -505,7 +505,7 @@ export default function App() {
       setTxStep("signing");
 
       const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
-        networkPassphrase: "Test SDF Network ; September 2015",
+        networkPassphrase: "Public Global Stellar Network ; September 2015",
         address: walletAddress,
       });
       setTxProgress(60);
@@ -544,7 +544,7 @@ export default function App() {
       setTxStep("signing");
 
       const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
-        networkPassphrase: "Test SDF Network ; September 2015",
+        networkPassphrase: "Public Global Stellar Network ; September 2015",
         address: walletAddress,
       });
       setTxProgress(60);
@@ -594,7 +594,7 @@ export default function App() {
       setTxStep("signing");
 
       const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
-        networkPassphrase: "Test SDF Network ; September 2015",
+        networkPassphrase: "Public Global Stellar Network ; September 2015",
         address: walletAddress,
       });
       setTxProgress(60);
@@ -650,7 +650,7 @@ export default function App() {
       setTxStep("signing");
 
       const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
-        networkPassphrase: "Test SDF Network ; September 2015",
+        networkPassphrase: "Public Global Stellar Network ; September 2015",
         address: walletAddress,
       });
       setTxProgress(60);
@@ -910,7 +910,7 @@ export default function App() {
 
       // Step 2: Sign with connected wallet (Freighter/StellarWalletsKit)
       const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
-        networkPassphrase: "Test SDF Network ; September 2015",
+        networkPassphrase: "Public Global Stellar Network ; September 2015",
         address: walletAddress,
       });
       setTxProgress(60);
@@ -951,7 +951,7 @@ export default function App() {
       setTxStep("signing");
 
       const { signedTxXdr } = await StellarWalletsKit.signTransaction(txXDR, {
-        networkPassphrase: "Test SDF Network ; September 2015",
+        networkPassphrase: "Public Global Stellar Network ; September 2015",
         address: walletAddress,
       });
       setTxProgress(60);

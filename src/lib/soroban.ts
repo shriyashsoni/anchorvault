@@ -67,7 +67,7 @@ export const ANCHOR_LIST = [
 ];
 
 // ── Network Config ──
-const SOROBAN_RPC_URL = "https://soroban-rpc.mainnet.stellar.org";
+const SOROBAN_RPC_URL = "https://mainnet.sorobanrpc.com";
 const HORIZON_URL = "https://horizon.stellar.org";
 const NETWORK_PASSPHRASE = Networks.PUBLIC;
 
