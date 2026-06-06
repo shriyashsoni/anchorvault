@@ -1,26 +1,14 @@
-<![CDATA[<div align="center">
-
 # AnchorVault
 
 ### Trustless On-Chain Remittance Liquidity Routing
 
-[![Stellar](https://img.shields.io/badge/Built%20on-Stellar-7C3AED?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org)
-[![Soroban](https://img.shields.io/badge/Smart%20Contracts-Soroban-00E5FF?style=for-the-badge&logo=webassembly&logoColor=white)](https://soroban.stellar.org)
-[![Network](https://img.shields.io/badge/Network-Mainnet-00C853?style=for-the-badge&logo=ethereum&logoColor=white)](#deployed-smart-contract-addresses-stellar-mainnet)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+[![Stellar](https://img.shields.io/badge/Built%20on-Stellar-7C3AED?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org) [![Soroban](https://img.shields.io/badge/Smart%20Contracts-Soroban-00E5FF?style=for-the-badge&logo=webassembly&logoColor=white)](https://soroban.stellar.org) [![Network](https://img.shields.io/badge/Network-Mainnet-00C853?style=for-the-badge&logo=ethereum&logoColor=white)](#deployed-smart-contract-addresses-stellar-mainnet) [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-[![Website](https://img.shields.io/badge/Website-anchorvault.xyz-FF6D00?style=flat-square&logo=googlechrome&logoColor=white)](https://www.anchorvault.xyz)
-[![Twitter](https://img.shields.io/badge/Twitter-@shriyashsoni-1DA1F2?style=flat-square&logo=x&logoColor=white)](https://x.com/shriyashsoni_)
-[![GitHub](https://img.shields.io/badge/GitHub-shriyashsoni-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/shriyashsoni)
-[![Docs](https://img.shields.io/badge/Docs-Read%20the%20Docs-0A0A0A?style=flat-square&logo=readthedocs&logoColor=white)](#documentation)
-
-<br/>
+[![Website](https://img.shields.io/badge/Website-anchorvault.xyz-FF6D00?style=flat-square&logo=googlechrome&logoColor=white)](https://www.anchorvault.xyz) [![Twitter](https://img.shields.io/badge/Twitter-@shriyashsoni-1DA1F2?style=flat-square&logo=x&logoColor=white)](https://x.com/shriyashsoni_) [![GitHub](https://img.shields.io/badge/GitHub-shriyashsoni-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/shriyashsoni) [![Docs](https://img.shields.io/badge/Docs-Read%20the%20Docs-0A0A0A?style=flat-square&logo=readthedocs&logoColor=white)](#documentation)
 
 **AnchorVault** is a production-grade, decentralized liquidity protocol built on the **Stellar Soroban Smart Contract Platform**. It bridges Liquidity Providers (LPs) with authorized off-ramp payment anchors to facilitate instant, cross-border remittances. LPs lock stablecoin reserves into corridor pools and organic yield is dynamically routed to them from real payment settlement flows.
 
 [Explore the App](https://www.anchorvault.xyz) · [Read the Docs](#documentation) · [View on Stellar Expert](#deployed-smart-contract-addresses-stellar-mainnet) · [Report a Bug](https://github.com/shriyashsoni/anchorvault/issues/new)
-
-</div>
 
 ---
 
@@ -369,16 +357,9 @@ Contributions are welcome! Whether it's a bug fix, feature request, or documenta
 
 ## Credits & Contact
 
-<div align="center">
-
 **Built with passion by [Shriyash Soni](https://github.com/shriyashsoni)**
 
-[![Website](https://img.shields.io/badge/Website-anchorvault.xyz-FF6D00?style=for-the-badge&logo=googlechrome&logoColor=white)](https://www.anchorvault.xyz)
-[![Twitter](https://img.shields.io/badge/Twitter%20%2F%20X-@shriyashsoni-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/shriyashsoni_)
-[![GitHub](https://img.shields.io/badge/GitHub-shriyashsoni-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/shriyashsoni)
-[![AnchorVault X](https://img.shields.io/badge/AnchorVault%20X-@Anchor__Vault-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/Anchor_Vault)
-
-</div>
+[![Website](https://img.shields.io/badge/Website-anchorvault.xyz-FF6D00?style=for-the-badge&logo=googlechrome&logoColor=white)](https://www.anchorvault.xyz) [![Twitter](https://img.shields.io/badge/Twitter%20%2F%20X-@shriyashsoni-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/shriyashsoni_) [![GitHub](https://img.shields.io/badge/GitHub-shriyashsoni-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/shriyashsoni) [![AnchorVault X](https://img.shields.io/badge/AnchorVault%20X-@Anchor__Vault-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/Anchor_Vault)
 
 ### Acknowledgements
 * [Stellar Development Foundation](https://stellar.org) — Layer-1 blockchain infrastructure
@@ -392,12 +373,6 @@ Contributions are welcome! Whether it's a bug fix, feature request, or documenta
 
 This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
-<div align="center">
-<br/>
-
 **[www.anchorvault.xyz](https://www.anchorvault.xyz)**
 
 <sub>AnchorVault — Powering the future of decentralized cross-border remittances on Stellar.</sub>
-
-</div>
-]]>
