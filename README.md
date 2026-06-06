@@ -1,23 +1,23 @@
-# 🛡️ AnchorVault: Trustless On-Chain Remittance Liquidity Routing
+# AnchorVault: Trustless On-Chain Remittance Liquidity Routing
 
 AnchorVault is a production-grade, decentralized liquidity protocol built on the **Stellar Soroban Smart Contract Platform**. It bridges Liquidity Providers (LPs) with authorized off-ramp payment anchors to facilitate instant, cross-border remittances. LPs lock stablecoin reserves into corridor pools and organic yield is dynamically routed to them from real payment settlement flows.
 
 ---
 
-## 📍 Deployed Smart Contract Addresses (Stellar Mainnet)
+## Deployed Smart Contract Addresses (Stellar Mainnet)
 
 The AnchorVault protocol is fully deployed and configured on the **Stellar Mainnet** at the following contract coordinates:
 
 | Contract Component | Stellar Contract Address (C...) | Role / Responsibility |
 | :--- | :--- | :--- |
-| 💵 **Stellar USDC Stablecoin** | [`CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75`](https://stellar.expert/explorer/public/contract/CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75) | Core asset of the corridor pools (Stellar Asset Contract) |
-| 🪙 **Vault Share Token ($AVLT)** | [`CDXELK3CF4GHCK6U3NETR2NNONDV3VDNKM7MT4QD5M23AHRN5X47O4IF`](https://stellar.expert/explorer/public/contract/CDXELK3CF4GHCK6U3NETR2NNONDV3VDNKM7MT4QD5M23AHRN5X47O4IF) | LP share representation minted dynamically during deposits |
-| 🛡️ **Anchor Registry** | [`CA6NMU2ADEKVTS4XBZRLAARH7VSF7JEKWKAHNVT7WE5ZIEEKKOCOM6QO`](https://stellar.expert/explorer/public/contract/CA6NMU2ADEKVTS4XBZRLAARH7VSF7JEKWKAHNVT7WE5ZIEEKKOCOM6QO) | Handles anchor whitelisting, reputation score calculation, and collateral stakes |
-| 🏦 **Corridor Pool Core Vault** | [`CDO3GSX27G6TAHLBROCC6WV4TNM6BWLFZDT2OW6RSUVBSGZJKTIISJFG`](https://stellar.expert/explorer/public/contract/CDO3GSX27G6TAHLBROCC6WV4TNM6BWLFZDT2OW6RSUVBSGZJKTIISJFG) | Manages deposit/withdrawal arithmetic and anchor liquidity routing |
+| **Stellar USDC Stablecoin** | [`CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75`](https://stellar.expert/explorer/public/contract/CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75) | Core asset of the corridor pools (Stellar Asset Contract) |
+| **Vault Share Token ($AVLT)** | [`CDXELK3CF4GHCK6U3NETR2NNONDV3VDNKM7MT4QD5M23AHRN5X47O4IF`](https://stellar.expert/explorer/public/contract/CDXELK3CF4GHCK6U3NETR2NNONDV3VDNKM7MT4QD5M23AHRN5X47O4IF) | LP share representation minted dynamically during deposits |
+| **Anchor Registry** | [`CA6NMU2ADEKVTS4XBZRLAARH7VSF7JEKWKAHNVT7WE5ZIEEKKOCOM6QO`](https://stellar.expert/explorer/public/contract/CA6NMU2ADEKVTS4XBZRLAARH7VSF7JEKWKAHNVT7WE5ZIEEKKOCOM6QO) | Handles anchor whitelisting, reputation score calculation, and collateral stakes |
+| **Corridor Pool Core Vault** | [`CDO3GSX27G6TAHLBROCC6WV4TNM6BWLFZDT2OW6RSUVBSGZJKTIISJFG`](https://stellar.expert/explorer/public/contract/CDO3GSX27G6TAHLBROCC6WV4TNM6BWLFZDT2OW6RSUVBSGZJKTIISJFG) | Manages deposit/withdrawal arithmetic and anchor liquidity routing |
 
 ---
 
-## 🗺️ Protocol Architecture & Flow Charts
+## Protocol Architecture & Flow Charts
 
 AnchorVault coordinates three distinct entities trustlessly on-chain: **Liquidity Providers**, **Payment Anchors**, and the **Core Smart Contracts**.
 
@@ -83,7 +83,7 @@ sequenceDiagram
 
 ---
 
-## 📈 Core Working Functionality
+## Core Working Functionality
 
 ### 1. Corridor Pool Vault (`anchor_vault`)
 LPs deposit USDC stablecoin to earn interest from global cross-border remittances. When USDC is deposited, LPs are minted **$AVLT** share tokens.
@@ -98,7 +98,7 @@ Before drawing capital to settle a payment, anchors must undergo reputational wh
 
 ---
 
-## 🧮 Dynamic Interest & Fee Model
+## Dynamic Interest & Fee Model
 
 The vault manages LP risk and incentivizes anchor repayments by computing fees using a **Two-Slope Utilization Curve**.
 
@@ -125,7 +125,7 @@ The fee rate $R$ (in basis points) changes dynamically based on whether utilizat
 
 ---
 
-## 🛠️ Developer Setup & Deployment Guide
+## Developer Setup & Deployment Guide
 
 Follow these steps to deploy and run AnchorVault locally or on the mainnet.
 
@@ -144,12 +144,16 @@ cd anchorvault
 npm install
 ```
 
-### 3. Generate Secure Developer Keys
-To generate and fund a secure mainnet keypair, run the secure keys utility:
-```bash
-node setup_keys.js
+### 3. Setup Developer Wallet
+You will need a funded Stellar Mainnet account to deploy the contracts. 
+Add your public and secret keys to the `.env` file along with the Mainnet configuration:
+```env
+STELLAR_NETWORK=mainnet
+SOROBAN_RPC_URL=https://mainnet.sorobanrpc.com
+STELLAR_NETWORK_PASSPHRASE="Public Global Stellar Network ; September 2015"
+DEPLOYER_SECRET_KEY="S..."
+DEPLOYER_PUBLIC_KEY="G..."
 ```
-*This script will query Stellar Friendbot to credit 10,000 Mainnet XLM into your wallet and write the public/secret keys securely into a local `.env` file.*
 
 ### 4. Compile & Deploy Smart Contracts
 Build and deploy the three Rust contracts to the Stellar Mainnet:
@@ -170,9 +174,42 @@ Launch the high-fidelity, liquid-glass themed user interface:
 ```bash
 npm run dev
 ```
-Open **`http://localhost:5173/`** to interact with the DeFi portal, connect Freighter, deposit mock USDC, and track real-time yield routing events!
+Open **`http://localhost:5173/`** to interact with the DeFi portal, connect Freighter, deposit USDC, and track real-time yield routing events!
 
 ---
 
-## ⚖️ License
+## SDK Integration
+
+To integrate the AnchorVault contracts into your own application, install the Stellar SDK and use the provided typescript bindings.
+
+### Installation
+```bash
+npm install @stellar/stellar-sdk @stellar/freighter-api
+```
+
+### Initializing the Client
+```typescript
+import { rpc, Contract } from '@stellar/stellar-sdk';
+import { CONTRACT_ADDRESSES } from './src/lib/soroban';
+
+// Connect to Stellar Mainnet
+const server = new rpc.Server('https://mainnet.sorobanrpc.com');
+
+// Initialize the Corridor Vault Contract
+const vaultContract = new Contract(CONTRACT_ADDRESSES.CORE_VAULT);
+```
+
+For advanced usage including building transactions and simulating calls, refer to the full TypeScript integration found in `src/lib/soroban.ts`.
+
+---
+
+## Credits & Contact
+
+Developed and maintained by **Shriyash Soni**.
+* **Twitter:** [@shriyashsoni_](https://twitter.com/shriyashsoni_) *(Update handle if different)*
+* **Main Website:** [www.anchorvault.xyz](https://www.anchorvault.xyz)
+
+---
+
+## License
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for more details.

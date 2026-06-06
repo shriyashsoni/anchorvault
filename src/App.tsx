@@ -329,7 +329,7 @@ export default function App() {
     try {
       StellarWalletsKit.init({
         modules: defaultModules(),
-        network: Networks.TESTNET
+        network: Networks.PUBLIC
       });
     } catch (err) {
       console.warn("StellarWalletsKit initialization error/warning:", err);
@@ -743,7 +743,7 @@ export default function App() {
     setAiRecommendation(null);
     setAiTerminalLogs([
       "> [AI Copilot] Initializing risk assessment run for anchor: " + formatAddress(walletAddress, 6),
-      "> [AI Copilot] Connecting to stellar-testnet.stellar.org RPC nodes...",
+      "> [AI Copilot] Connecting to stellar-PUBLIC.stellar.org RPC nodes...",
       "> [AI Copilot] Querying on-chain registry parameters and active collateral ratio...",
     ]);
 
@@ -844,7 +844,7 @@ export default function App() {
     setAiExecutionStatus("submitting");
     setAiTerminalLogs(prev => [
       ...prev,
-      `> [AI Copilot] Executing autonomous governance transaction on Stellar Testnet...`,
+      `> [AI Copilot] Executing autonomous governance transaction on Stellar PUBLIC...`,
     ]);
 
     try {
@@ -1425,7 +1425,7 @@ export default function App() {
                   <h3 className="font-semibold text-lg flex items-center gap-2">
                     <span>AnchorVault Portal</span>
                     <span className="bg-green-500/10 text-green-400 text-[10px] font-mono px-2 py-0.5 rounded-full border border-green-500/20">
-                      Stellar Testnet
+                      Stellar PUBLIC
                     </span>
                   </h3>
                   <p className="text-xs text-neutral-400">Soroban Smart Contract Integrations</p>
@@ -1490,7 +1490,7 @@ export default function App() {
                   )}
                   <div className="flex items-center gap-1.5 px-4">
                     <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[9px] text-green-400 font-mono">Soroban Testnet Live</span>
+                    <span className="text-[9px] text-green-400 font-mono">Soroban PUBLIC Live</span>
                   </div>
                 </div>
               </div>
@@ -1534,7 +1534,7 @@ export default function App() {
 
                     {/* Contract Addresses */}
                     <div className="bg-neutral-950 border border-white/5 rounded-2xl p-5">
-                      <h4 className="font-semibold text-sm mb-3 uppercase tracking-wider text-neutral-400">Deployed Contracts (Testnet)</h4>
+                      <h4 className="font-semibold text-sm mb-3 uppercase tracking-wider text-neutral-400">Deployed Contracts (PUBLIC)</h4>
                       <div className="grid grid-cols-2 gap-3">
                         {[
                           { label: "CoreVault", addr: CONTRACT_ADDRESSES.CORE_VAULT, color: "text-purple-400" },
@@ -1696,7 +1696,7 @@ export default function App() {
                           </div>
                           
                           {(txStep === "building") && (
-                            <><div className="text-cyan-400">[RPC] Connecting to soroban-testnet.stellar.org...</div>
+                            <><div className="text-cyan-400">[RPC] Connecting to soroban-PUBLIC.stellar.org...</div>
                             <div className="text-white">[BUILD] Simulating transaction footprint...</div>
                             <div className="text-[#FA8453] font-semibold flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> Assembling XDR...</div></>
                           )}
@@ -1771,7 +1771,7 @@ export default function App() {
                         {registeredAnchors.length === 0 ? (
                           <div className="text-center py-8 text-neutral-500 font-mono text-xs flex items-center justify-center gap-2 bg-neutral-900/20 border border-white/5 rounded-xl">
                             <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" />
-                            <span>Fetching on-chain anchor registry states from Stellar Testnet...</span>
+                            <span>Fetching on-chain anchor registry states from Stellar PUBLIC...</span>
                           </div>
                         ) : (
                           registeredAnchors.map((anchor, idx) => (
@@ -2038,7 +2038,7 @@ export default function App() {
                     <div className="bg-neutral-950 border border-white/5 rounded-2xl p-5 flex flex-col gap-4">
                       <div>
                         <h4 className="font-semibold text-lg text-white">Stellar On-chain Faucet & Sandbox</h4>
-                        <p className="text-xs text-neutral-400 mt-1">Fund your connected Freighter wallet with Testnet XLM and mint mock USDC stablecoins instantly.</p>
+                        <p className="text-xs text-neutral-400 mt-1">Fund your connected Freighter wallet with PUBLIC XLM and mint mock USDC stablecoins instantly.</p>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
@@ -2047,7 +2047,7 @@ export default function App() {
                           <div className="flex flex-col gap-2">
                             <span className="text-xs font-bold text-[#00e5ff] uppercase tracking-wider">1. Faucet & Gas Funder</span>
                             <p className="text-xs text-neutral-400 leading-relaxed font-light">
-                              Get 10,000 Testnet XLM (gas coins) and mint 10,000 mock USDC on-chain to test deposits, withdrawals, and staking collateral.
+                              Get 10,000 PUBLIC XLM (gas coins) and mint 10,000 mock USDC on-chain to test deposits, withdrawals, and staking collateral.
                             </p>
                           </div>
                           
@@ -2104,10 +2104,10 @@ export default function App() {
 
                       {/* Log Output Console */}
                       <div className="border border-white/10 rounded-2xl bg-neutral-900/60 p-4 font-mono text-[10px] leading-relaxed flex flex-col gap-1.5 mt-2">
-                        <span className="text-neutral-500">// Stellar Testnet Sandbox Console</span>
+                        <span className="text-neutral-500">// Stellar PUBLIC Sandbox Console</span>
                         <div className="flex items-center gap-1.5">
                           <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                          <span className="text-neutral-400">Consensus Status: connected to stellar-testnet.stellar.org</span>
+                          <span className="text-neutral-400">Consensus Status: connected to stellar-PUBLIC.stellar.org</span>
                         </div>
                         
                         {faucetStatus === "funding" && <span className="text-cyan-300">&gt; Invoking Friendbot funder on-chain for {walletAddress}...</span>}
@@ -2194,7 +2194,7 @@ export default function App() {
                                 })
                               )}
                               {aiExecutionStatus === "submitting" && <span className="text-yellow-400 flex items-center gap-1.5"><Loader2 className="h-3 w-3 animate-spin" /> Broadcasting AI decision to Stellar consensus nodes...</span>}
-                              {aiExecutionStatus === "success" && <span className="text-green-400 font-semibold">&gt; SUCCESS: Autonomous auto-adjustment executed on Stellar Testnet! Registry is now fully optimized.</span>}
+                              {aiExecutionStatus === "success" && <span className="text-green-400 font-semibold">&gt; SUCCESS: Autonomous auto-adjustment executed on Stellar PUBLIC! Registry is now fully optimized.</span>}
                             </div>
                           </div>
 
@@ -2476,7 +2476,7 @@ export default function App() {
                         ✨
                       </div>
                       <p className="text-xs text-purple-300 leading-relaxed font-sans">
-                        Welcome to AnchorVault! Your wallet is now connected to Stellar Testnet. All balances and transactions are fetched live from the Soroban network. Use the Friendbot to fund your account with test XLM if needed.
+                        Welcome to AnchorVault! Your wallet is now connected to Stellar PUBLIC. All balances and transactions are fetched live from the Soroban network. Use the Friendbot to fund your account with test XLM if needed.
                       </p>
                     </div>
 
