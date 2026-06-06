@@ -1078,6 +1078,14 @@ export async function offsetDefaultedDebtOnChain(anchorAddress: string): Promise
 export async function adjustCreditLimitOnChain(userPubKey: string, newLimit: string): Promise<string> {
   const deployerKeypair = Keypair.fromSecret(DEPLOYER_SECRET);
   const deployerAddress = deployerKeypair.publicKey();
+  
+  // Check if registered first to prevent VM trap UnreachableCodeReached (expect failed)
+  const vaultRecord = await fetchAnchorVaultState(deployerAddress, userPubKey);
+  if (!vaultRecord || !vaultRecord.isRegistered) {
+    console.log(`[Soroban] Anchor not registered in Vault! Registering instead of adjusting...`);
+    return await registerAnchorOnChain(userPubKey, newLimit);
+  }
+
   const limitScaled = BigInt(Math.round(parseFloat(newLimit) * 1e7)); // 7 decimals
   
   // Adjust in CoreVault (single source of truth for drawdown limits)
