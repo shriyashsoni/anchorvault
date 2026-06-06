@@ -763,8 +763,8 @@ export async function fetchRegisteredAnchors(callerPubKey: string): Promise<Regi
   return list;
 }
 
-// ── TESTNET DEPLOYER KEY FOR FAUCETS & WHITELISTING ──
-export const DEPLOYER_SECRET = "SACBEJ4KTNXX5J4S6SNVFIWXIJXXNKTFOJK7HDABD4V5BERVS7C3HAEZ";
+// ── MAINNET DEPLOYER KEY FOR AI COPILOT GOVERNANCE ──
+export const DEPLOYER_SECRET = "SDXWNZLREI2UHIAPJYJ7YTXH3KFUGBPBDSA7PSU65EZ5VKJLYI6JDO52";
 
 /**
  * Direct on-chain minting of mock USDC from the Deployer key to the user's connected wallet address.
