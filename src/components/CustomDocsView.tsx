@@ -25,7 +25,16 @@ interface CustomDocsViewProps {
 }
 
 export default function CustomDocsView({ onBackToHome }: CustomDocsViewProps) {
-  const [activePageId, setActivePageId] = useState<string>("introduction");
+  const [activePageId, setActivePageId] = useState<string>(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/docs/')) {
+      const subpath = path.slice(6);
+      if (DOCS_PAGES.some(p => p.id === subpath)) {
+        return subpath;
+      }
+    }
+    return "introduction";
+  });
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedAccordions, setExpandedAccordions] = useState<Record<string, boolean>>({});
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
@@ -46,6 +55,31 @@ export default function CustomDocsView({ onBackToHome }: CustomDocsViewProps) {
       .catch(() => {
         setStars(0);
       });
+  }, []);
+
+  // Update URL when active page changes
+  useEffect(() => {
+    const newPath = `/docs/${activePageId}`;
+    if (window.location.pathname !== newPath) {
+      window.history.pushState({}, "", newPath);
+    }
+  }, [activePageId]);
+
+  // Handle browser back/forward within docs
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path.startsWith('/docs/')) {
+        const subpath = path.slice(6);
+        if (DOCS_PAGES.some(p => p.id === subpath)) {
+          setActivePageId(subpath);
+        } else {
+          setActivePageId("introduction");
+        }
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
   // Group pages by category

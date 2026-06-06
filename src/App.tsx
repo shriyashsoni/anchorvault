@@ -221,15 +221,17 @@ export default function App() {
   // --- SPA ROUTING / SEO FIX ---
   useEffect(() => {
     // On mount, check if there's a specific route in the pathname
-    const path = window.location.pathname.replace("/", "");
-    if (["whitepaper", "privacy", "terms", "branding", "docs"].includes(path)) {
-      setCurrentView(path as any);
+    const path = window.location.pathname.replace(/^\/+/, "");
+    const baseRoute = path.split('/')[0];
+    if (["whitepaper", "privacy", "terms", "branding", "docs"].includes(baseRoute)) {
+      setCurrentView(baseRoute as any);
     }
 
     const handlePopState = () => {
-      const p = window.location.pathname.replace("/", "");
-      if (["whitepaper", "privacy", "terms", "branding", "docs"].includes(p)) {
-        setCurrentView(p as any);
+      const p = window.location.pathname.replace(/^\/+/, "");
+      const baseR = p.split('/')[0];
+      if (["whitepaper", "privacy", "terms", "branding", "docs"].includes(baseR)) {
+        setCurrentView(baseR as any);
       } else {
         setCurrentView("home");
       }
@@ -240,9 +242,15 @@ export default function App() {
 
   // Update URL when view changes
   useEffect(() => {
-    const path = currentView === "home" ? "/" : `/${currentView}`;
-    if (window.location.pathname !== path) {
-      window.history.pushState({}, "", path);
+    if (currentView !== "docs") {
+      const path = currentView === "home" ? "/" : `/${currentView}`;
+      if (window.location.pathname !== path) {
+        window.history.pushState({}, "", path);
+      }
+    } else {
+      if (!window.location.pathname.startsWith('/docs')) {
+        window.history.pushState({}, "", "/docs");
+      }
     }
   }, [currentView]);
 
