@@ -775,10 +775,19 @@ export async function mintMockUSDC(userPubKey: string, amount: string): Promise<
   const deployerKeypair = Keypair.fromSecret(DEPLOYER_SECRET);
   const deployerAddress = deployerKeypair.publicKey();
   
-  const contract = new Contract(CONTRACT_ADDRESSES.USDC);
   const amountScaled = BigInt(Math.round(parseFloat(amount) * 1e7)); // 7 decimals
   
-  const call = contract.call(
+  // Mint USDC
+  const contractUSDC = new Contract(CONTRACT_ADDRESSES.USDC);
+  const callUSDC = contractUSDC.call(
+    "mint",
+    new Address(userPubKey).toScVal(),
+    nativeToScVal(amountScaled, { type: "i128" })
+  );
+  
+  // Mint $VAULT Governance Tokens (same amount)
+  const contractVault = new Contract(CONTRACT_ADDRESSES.GOVERNANCE_TOKEN);
+  const callVault = contractVault.call(
     "mint",
     new Address(userPubKey).toScVal(),
     nativeToScVal(amountScaled, { type: "i128" })
@@ -786,10 +795,11 @@ export async function mintMockUSDC(userPubKey: string, amount: string): Promise<
   
   const account = await sorobanServer.getAccount(deployerAddress);
   const tx = new TransactionBuilder(account, {
-    fee: "100000",
+    fee: "200000",
     networkPassphrase: NETWORK_PASSPHRASE,
   })
-    .addOperation(call)
+    .addOperation(callUSDC)
+    .addOperation(callVault)
     .setTimeout(300)
     .build();
     

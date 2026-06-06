@@ -533,7 +533,7 @@ export default function App() {
     if (val > userBalanceVal) {
       setTxStep("error");
       setTxProgress(0);
-      setTxError(`Insufficient $VAULT token balance. You have ${userBalanceVal.toFixed(7)} $VAULT, but tried to stake/lock ${val.toFixed(7)} $VAULT. Please deposit USDC in the "Deposit & Earn" tab to mint $VAULT shares first.`);
+      setTxError(`Insufficient $VAULT token balance. You have ${userBalanceVal.toFixed(7)} $VAULT, but tried to stake/lock ${val.toFixed(7)} $VAULT. Please mint $VAULT tokens in the "Sandbox" tab first.`);
       return;
     }
 
@@ -2133,7 +2133,7 @@ export default function App() {
                             <h4 className="font-semibold text-sm text-white uppercase tracking-wider border-b border-white/5 pb-2">Collateral Stake Manager</h4>
                             
                             <form onSubmit={executeLockCollateral} className="flex flex-col gap-2.5">
-                              <label className="text-[11px] text-neutral-400">Stake LP Shares ($AVLT) as Collateral</label>
+                              <label className="text-[11px] text-neutral-400">Stake $VAULT Governance Tokens as Collateral</label>
                               <div className="relative">
                                 <input type="number" required value={lockCollateralAmount} onChange={(e) => setLockCollateralAmount(e.target.value)}
                                   placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#7b39fc]" />
@@ -2146,7 +2146,7 @@ export default function App() {
                             </form>
 
                             <form onSubmit={executeReleaseCollateral} className="flex flex-col gap-2.5 mt-2">
-                              <label className="text-[11px] text-neutral-400">Release Collateral back to LP shares</label>
+                              <label className="text-[11px] text-neutral-400">Release Collateral back to your wallet</label>
                               <div className="relative">
                                 <input type="number" required value={releaseCollateralAmount} onChange={(e) => setReleaseCollateralAmount(e.target.value)}
                                   placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#7b39fc]" />
@@ -2235,7 +2235,7 @@ export default function App() {
                           <div className="flex flex-col gap-2">
                             <span className="text-xs font-bold text-[#00e5ff] uppercase tracking-wider">1. Faucet & Gas Funder</span>
                             <p className="text-xs text-neutral-400 leading-relaxed font-light">
-                              Get 10,000 PUBLIC XLM (gas coins) and mint 10,000 mock USDC on-chain to test deposits, withdrawals, and staking collateral.
+                              Get 10,000 PUBLIC XLM (gas coins) and mint 10,000 mock USDC + 10,000 $VAULT on-chain to test deposits, withdrawals, and staking collateral.
                             </p>
                           </div>
                           
@@ -2247,7 +2247,7 @@ export default function App() {
                             {faucetStatus === "funding" && <RefreshCw className="h-3 w-3 animate-spin" />}
                             <span>
                               {faucetStatus === "funding" && "Funding XLM (Friendbot)..."}
-                              {faucetStatus === "minting" && "Minting 10,000 USDC on-chain..."}
+                              {faucetStatus === "minting" && "Minting 10,000 USDC & 10,000 $VAULT on-chain..."}
                               {faucetStatus === "idle" && "Claim XLM & USDC Faucet"}
                               {faucetStatus === "success" && "Faucet Claimed Successfully! ✓"}
                               {faucetStatus === "error" && "Claim Failed - Try Again"}
@@ -2299,8 +2299,8 @@ export default function App() {
                         </div>
                         
                         {faucetStatus === "funding" && <span className="text-cyan-300">&gt; Invoking Friendbot funder on-chain for {walletAddress}...</span>}
-                        {faucetStatus === "minting" && <span className="text-cyan-300">&gt; Invoking USDCToken::mint({walletAddress}, 100000000000) via deployer authority...</span>}
-                        {faucetStatus === "success" && <span className="text-green-400">&gt; SUCCESS: 10,000 USDC successfully minted! Tx Hash: {sandboxSuccessTx.slice(0, 16)}...</span>}
+                        {faucetStatus === "minting" && <span className="text-cyan-300">&gt; Invoking USDCToken::mint() & VaultToken::mint() via deployer authority...</span>}
+                        {faucetStatus === "success" && <span className="text-green-400">&gt; SUCCESS: 10,000 USDC & 10,000 $VAULT successfully minted! Tx Hash: {sandboxSuccessTx.slice(0, 16)}...</span>}
                         
                         {registerStatus === "registering" && <span className="text-yellow-400">&gt; Whitelisting key as anchor. Invoking AnchorRegistry::register_anchor...</span>}
                         {registerStatus === "success" && <span className="text-green-400">&gt; SUCCESS: Connected key registered in both registry and vault!</span>}
