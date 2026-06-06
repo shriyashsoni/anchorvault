@@ -1899,7 +1899,7 @@ export default function App() {
                               placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#00e5ff]" />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-neutral-400">LP</span>
                           </div>
-                          <button type="submit" disabled={txStep !== "idle"}
+                          <button type="submit" disabled={txStep !== "idle" && txStep !== "error" && txStep !== "success"}
                             className="w-full bg-gradient-to-r from-[#00e5ff] to-[#7b39fc] text-white font-semibold py-3 rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs flex items-center justify-center gap-1 shadow-md disabled:opacity-50">
                             <span>Withdraw & Claim Yield</span>
                             <ArrowDownLeft className="h-4 w-4" />
@@ -1971,7 +1971,7 @@ export default function App() {
                                   placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#7b39fc]" />
                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-neutral-400">AVLT</span>
                               </div>
-                              <button type="submit" disabled={txStep !== "idle"}
+                              <button type="submit" disabled={txStep !== "idle" && txStep !== "error" && txStep !== "success"}
                                 className="w-full bg-gradient-to-r from-[#7b39fc] to-[#00e5ff] text-white font-semibold py-2.5 rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs shadow-md disabled:opacity-50 cursor-pointer">
                                 Lock Staking Collateral
                               </button>
@@ -1984,7 +1984,7 @@ export default function App() {
                                   placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#7b39fc]" />
                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-neutral-400">AVLT</span>
                               </div>
-                              <button type="submit" disabled={txStep !== "idle"}
+                              <button type="submit" disabled={txStep !== "idle" && txStep !== "error" && txStep !== "success"}
                                 className="w-full border border-white/10 text-neutral-300 font-semibold py-2.5 rounded-xl hover:bg-white/5 active:scale-95 transition-all text-xs disabled:opacity-50 cursor-pointer">
                                 Release Collateral
                               </button>
@@ -2002,7 +2002,7 @@ export default function App() {
                                   placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-500" />
                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-neutral-400">USDC</span>
                               </div>
-                              <button type="submit" disabled={txStep !== "idle"}
+                              <button type="submit" disabled={txStep !== "idle" && txStep !== "error" && txStep !== "success"}
                                 className="w-full bg-gradient-to-r from-yellow-500 to-[#7b39fc] text-white font-semibold py-2.5 rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs shadow-md disabled:opacity-50 cursor-pointer">
                                 Draw USDC Liquidity
                               </button>
@@ -2015,7 +2015,7 @@ export default function App() {
                                   placeholder="0.00" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-500" />
                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-neutral-400">USDC</span>
                               </div>
-                              <button type="submit" disabled={txStep !== "idle"}
+                              <button type="submit" disabled={txStep !== "idle" && txStep !== "error" && txStep !== "success"}
                                 className="w-full border border-white/10 text-neutral-300 font-semibold py-2.5 rounded-xl hover:bg-white/5 active:scale-95 transition-all text-xs disabled:opacity-50 cursor-pointer">
                                 Repay USDC Principal
                               </button>
