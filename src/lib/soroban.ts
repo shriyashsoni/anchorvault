@@ -771,21 +771,13 @@ export const DEPLOYER_SECRET = "SDXWNZLREI2UHIAPJYJ7YTXH3KFUGBPBDSA7PSU65EZ5VKJL
 /**
  * Direct on-chain minting of mock USDC from the Deployer key to the user's connected wallet address.
  */
-export async function mintMockUSDC(userPubKey: string, amount: string): Promise<string> {
+export async function mintVaultToken(userPubKey: string, amount: string): Promise<string> {
   const deployerKeypair = Keypair.fromSecret(DEPLOYER_SECRET);
   const deployerAddress = deployerKeypair.publicKey();
   
   const amountScaled = BigInt(Math.round(parseFloat(amount) * 1e7)); // 7 decimals
   
-  // Mint USDC
-  const contractUSDC = new Contract(CONTRACT_ADDRESSES.USDC);
-  const callUSDC = contractUSDC.call(
-    "mint",
-    new Address(userPubKey).toScVal(),
-    nativeToScVal(amountScaled, { type: "i128" })
-  );
-  
-  // Mint $VAULT Governance Tokens (same amount)
+  // Mint $VAULT Governance Tokens (we have deployer authority for this on Mainnet)
   const contractVault = new Contract(CONTRACT_ADDRESSES.GOVERNANCE_TOKEN);
   const callVault = contractVault.call(
     "mint",
@@ -795,10 +787,9 @@ export async function mintMockUSDC(userPubKey: string, amount: string): Promise<
   
   const account = await sorobanServer.getAccount(deployerAddress);
   const tx = new TransactionBuilder(account, {
-    fee: "200000",
+    fee: "100000",
     networkPassphrase: NETWORK_PASSPHRASE,
   })
-    .addOperation(callUSDC)
     .addOperation(callVault)
     .setTimeout(300)
     .build();

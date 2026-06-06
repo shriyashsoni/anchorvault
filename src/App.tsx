@@ -41,7 +41,7 @@ import {
   formatAddress,
   timeAgo,
   fetchRegisteredAnchors,
-  mintMockUSDC,
+  mintVaultToken,
   registerAnchorOnChain,
   buildLockCollateralTransaction,
   buildReleaseCollateralTransaction,
@@ -453,7 +453,7 @@ export default function App() {
       }
       
       setFaucetStatus("minting");
-      const hash = await mintMockUSDC(walletAddress, "10000");
+      const hash = await mintVaultToken(walletAddress, "10000");
       setSandboxSuccessTx(hash);
       setFaucetStatus("success");
       
@@ -2233,9 +2233,9 @@ export default function App() {
                         {/* Token Faucet Card */}
                         <div className="bg-neutral-900/40 border border-white/5 rounded-2xl p-5 flex flex-col justify-between gap-4">
                           <div className="flex flex-col gap-2">
-                            <span className="text-xs font-bold text-[#00e5ff] uppercase tracking-wider">1. Faucet & Gas Funder</span>
+                            <span className="text-xs font-bold text-[#00e5ff] uppercase tracking-wider">1. Mainnet Faucet</span>
                             <p className="text-xs text-neutral-400 leading-relaxed font-light">
-                              Get 10,000 PUBLIC XLM (gas coins) and mint 10,000 mock USDC + 10,000 $VAULT on-chain to test deposits, withdrawals, and staking collateral.
+                              Get 10,000 PUBLIC XLM (gas coins) from Friendbot, and mint 10,000 $VAULT Governance Tokens on-chain so you can stake collateral. (For USDC, use the Quick Swap tab!)
                             </p>
                           </div>
                           
@@ -2247,8 +2247,8 @@ export default function App() {
                             {faucetStatus === "funding" && <RefreshCw className="h-3 w-3 animate-spin" />}
                             <span>
                               {faucetStatus === "funding" && "Funding XLM (Friendbot)..."}
-                              {faucetStatus === "minting" && "Minting 10,000 USDC & 10,000 $VAULT on-chain..."}
-                              {faucetStatus === "idle" && "Claim XLM & USDC Faucet"}
+                              {faucetStatus === "minting" && "Minting 10,000 $VAULT on-chain..."}
+                              {faucetStatus === "idle" && "Claim XLM & $VAULT Faucet"}
                               {faucetStatus === "success" && "Faucet Claimed Successfully! ✓"}
                               {faucetStatus === "error" && "Claim Failed - Try Again"}
                             </span>
@@ -2299,8 +2299,8 @@ export default function App() {
                         </div>
                         
                         {faucetStatus === "funding" && <span className="text-cyan-300">&gt; Invoking Friendbot funder on-chain for {walletAddress}...</span>}
-                        {faucetStatus === "minting" && <span className="text-cyan-300">&gt; Invoking USDCToken::mint() & VaultToken::mint() via deployer authority...</span>}
-                        {faucetStatus === "success" && <span className="text-green-400">&gt; SUCCESS: 10,000 USDC & 10,000 $VAULT successfully minted! Tx Hash: {sandboxSuccessTx.slice(0, 16)}...</span>}
+                        {faucetStatus === "minting" && <span className="text-cyan-300">&gt; Invoking VaultToken::mint() via deployer authority...</span>}
+                        {faucetStatus === "success" && <span className="text-green-400">&gt; SUCCESS: 10,000 $VAULT successfully minted! Tx Hash: {sandboxSuccessTx.slice(0, 16)}...</span>}
                         
                         {registerStatus === "registering" && <span className="text-yellow-400">&gt; Whitelisting key as anchor. Invoking AnchorRegistry::register_anchor...</span>}
                         {registerStatus === "success" && <span className="text-green-400">&gt; SUCCESS: Connected key registered in both registry and vault!</span>}
