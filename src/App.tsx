@@ -784,10 +784,25 @@ export default function App() {
     const reputationVal = anchorData ? parseFloat(anchorData.reputationScore) : 80;
     const collateralVal = anchorData ? parseFloat(anchorData.lockedCollateral) : 0;
     const borrowedVal = anchorData ? parseFloat(anchorData.activeDraw) : 0;
+    
+    // Dynamically factor in their actual wallet holdings so every account gets a unique assessment
+    const walletXlm = parseFloat(balances.xlm || "0");
+    const walletUsdc = parseFloat(balances.usdc || "0");
 
     let score = Math.round(reputationVal * 10);
+    
+    // Add bonus points for having deep wallet liquidity (proving they are a serious anchor)
+    if (walletXlm > 1000) score += 40;
+    else if (walletXlm > 100) score += 15;
+    
+    if (walletUsdc > 1000) score += 60;
+    else if (walletUsdc > 100) score += 25;
+
+    // Standard on-chain mechanics
     if (collateralVal > 0) score += 50;
     if (borrowedVal > 0) score -= 30;
+    
+    // Cap between 100 and 1000
     score = Math.min(Math.max(score, 100), 1000);
 
     let rating = "BBB";
