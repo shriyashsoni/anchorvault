@@ -1964,10 +1964,15 @@ export default function App() {
                             Stellar Anchors lock reputation collateral into `CAWO6A52...` to qualify for settlement corridor routing.
                           </p>
                         </div>
-                        <div className="text-neutral-400 hover:text-white cursor-pointer p-2 bg-neutral-900 rounded-lg flex items-center gap-1 text-xs">
+                        <a 
+                          href={getStellarExpertContractUrl(CONTRACT_ADDRESSES.ANCHOR_REGISTRY)} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="text-neutral-400 hover:text-white cursor-pointer p-2 bg-neutral-900 rounded-lg flex items-center gap-1 text-xs transition-colors"
+                        >
                           <span className="font-mono">{CONTRACT_ADDRESSES.ANCHOR_REGISTRY.substring(0, 10)}...</span>
                           <ExternalLink className="h-3 w-3" />
-                        </div>
+                        </a>
                       </div>
 
                       {/* Anchor registry cards */}
