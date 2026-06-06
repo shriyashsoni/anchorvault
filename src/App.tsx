@@ -5,6 +5,7 @@ import {
   ArrowUpRight, 
   ArrowDownLeft, 
   ArrowRight,
+  ArrowDown,
   Coins, 
   Activity, 
   Globe, 
@@ -1803,7 +1804,6 @@ export default function App() {
                       </div>
                     )}
 
-                  </div>
                   </div>
                 )}
 
