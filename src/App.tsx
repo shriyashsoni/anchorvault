@@ -83,37 +83,37 @@ const SUPPORTED_WALLETS = [
     id: "freighter",
     name: "Freighter",
     description: "Official Stellar Extension",
-    icon: "https://stellar.creit.tech/wallet-icons/freighter.png",
+    icon: "/unnamed.png",
   },
   {
     id: "lobstr",
     name: "LOBSTR",
     description: "Secure Stellar Portal",
-    icon: "https://stellar.creit.tech/wallet-icons/lobstr.png",
+    icon: "/unnamed.png",
   },
   {
     id: "xbull",
     name: "xBull",
     description: "Power-User Wallet",
-    icon: "https://stellar.creit.tech/wallet-icons/xbull.png",
+    icon: "/unnamed.png",
   },
   {
     id: "albedo",
     name: "Albedo",
     description: "Web SEP Handshakes",
-    icon: "https://stellar.creit.tech/wallet-icons/albedo.png",
+    icon: "/unnamed.png",
   },
   {
     id: "hana",
     name: "Hana Wallet",
     description: "Multi-Chain Portal",
-    icon: "https://stellar.creit.tech/wallet-icons/hana.png",
+    icon: "/unnamed.png",
   },
   {
     id: "rabet",
     name: "Rabet",
     description: "Instant Extension",
-    icon: "https://stellar.creit.tech/wallet-icons/rabet.png",
+    icon: "/unnamed.png",
   },
 ];
 
