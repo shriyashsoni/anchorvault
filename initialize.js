@@ -53,52 +53,61 @@ console.log("=================================================\n");
 // ─────────────────────────────────────────────────────────
 //  Send a contract call transaction
 // ─────────────────────────────────────────────────────────
-async function callContract(label, contractId, method, args) {
-  console.log(`⌛ Calling ${label} → ${method}()...`);
-  const contract = new Contract(contractId);
-  const account  = await server.getAccount(deployerKeypair.publicKey());
+async function callContract(label, contractId, method, args, attempt = 1) {
+  try {
+    console.log(`⌛ Calling ${label} → ${method}()...`);
+    const contract = new Contract(contractId);
+    const account  = await server.getAccount(deployerKeypair.publicKey());
 
-  const tx = new TransactionBuilder(account, {
-    fee: '100000',
-    networkPassphrase: passphrase,
-  })
-    .addOperation(contract.call(method, ...args))
-    .setTimeout(TimeoutInfinite)
-    .build();
+    const tx = new TransactionBuilder(account, {
+      fee: '100000',
+      networkPassphrase: passphrase,
+    })
+      .addOperation(contract.call(method, ...args))
+      .setTimeout(TimeoutInfinite)
+      .build();
 
-  const simResult = await server.simulateTransaction(tx);
-  if (!rpc.Api.isSimulationSuccess(simResult)) {
-    const errMsg = rpc.Api.isSimulationError(simResult) ? simResult.error : JSON.stringify(simResult);
-    if (
-      errMsg.includes("Already initialized") || 
-      errMsg.includes("ExistingValue") || 
-      errMsg.includes("already") ||
-      (method === "initialize" && (errMsg.includes("InvalidAction") || errMsg.includes("UnreachableCodeReached")))
-    ) {
-      console.log(`  ⚠️  Already initialized — skipping.\n`);
-      return;
+    const simResult = await server.simulateTransaction(tx);
+    if (!rpc.Api.isSimulationSuccess(simResult)) {
+      const errMsg = rpc.Api.isSimulationError(simResult) ? simResult.error : JSON.stringify(simResult);
+      if (
+        errMsg.includes("Already initialized") || 
+        errMsg.includes("ExistingValue") || 
+        errMsg.includes("already") ||
+        (method === "initialize" && (errMsg.includes("InvalidAction") || errMsg.includes("UnreachableCodeReached")))
+      ) {
+        console.log(`  ⚠️  Already initialized — skipping.\n`);
+        return;
+      }
+      throw new Error(`Simulation failed: ${errMsg}`);
     }
-    throw new Error(`Simulation failed: ${errMsg}`);
-  }
 
-  const preparedTx = rpc.assembleTransaction(tx, simResult).build();
-  preparedTx.sign(deployerKeypair);
+    const preparedTx = rpc.assembleTransaction(tx, simResult).build();
+    preparedTx.sign(deployerKeypair);
 
-  const sendResp = await server.sendTransaction(preparedTx);
-  if (sendResp.status === 'ERROR') {
-    throw new Error(`Tx error: ${sendResp.errorResultXdr}`);
-  }
-
-  for (let i = 0; i < 30; i++) {
-    const info = await server.getTransaction(sendResp.hash);
-    if (info.status === 'SUCCESS') {
-      console.log(`  ✅ ${label} → ${method}() confirmed! Hash: ${sendResp.hash}\n`);
-      return;
+    const sendResp = await server.sendTransaction(preparedTx);
+    if (sendResp.status === 'ERROR') {
+      throw new Error(`Tx error: ${sendResp.errorResultXdr}`);
     }
-    if (info.status === 'FAILED') throw new Error(`Tx FAILED: ${sendResp.hash}`);
-    await new Promise(r => setTimeout(r, 2000));
+
+    for (let i = 0; i < 150; i++) {
+      const info = await server.getTransaction(sendResp.hash);
+      if (info.status === 'SUCCESS') {
+        console.log(`  ✅ ${label} → ${method}() confirmed! Hash: ${sendResp.hash}\n`);
+        return;
+      }
+      if (info.status === 'FAILED') throw new Error(`Tx FAILED: ${sendResp.hash}`);
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    throw new Error("Timeout waiting for confirmation.");
+  } catch (err) {
+    if (attempt < 3) {
+      console.log(`  ⚠️ Retry ${attempt} failed (${err.message}). Retrying in 5s...`);
+      await new Promise(r => setTimeout(r, 5000));
+      return callContract(label, contractId, method, args, attempt + 1);
+    }
+    throw err;
   }
-  throw new Error("Timeout waiting for confirmation.");
 }
 
 // ─────────────────────────────────────────────────────────

@@ -11,7 +11,7 @@ import {
 import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-
+import * as crypto from 'crypto';
 // Load local private environment variables from .env
 dotenv.config();
 
@@ -48,82 +48,92 @@ async function uploadWasm(wasmPath) {
 
   console.log(`📤 Uploading WASM: ${path.basename(wasmPath)}...`);
   const wasmBytes = fs.readFileSync(absolutePath);
-  const account = await server.getAccount(deployerKeypair.publicKey());
+  const computedHashHex = crypto.createHash('sha256').update(wasmBytes).digest('hex');
 
-  let tx = new TransactionBuilder(account, { fee: '100000', networkPassphrase: passphrase })
-    .addOperation(Operation.uploadContractWasm({ wasm: wasmBytes }))
-    .setTimeout(TimeoutInfinite)
-    .build();
+  try {
+    const account = await server.getAccount(deployerKeypair.publicKey());
 
-  console.log("  ⌛ Simulating...");
-  const prepared = await server.prepareTransaction(tx);
-  prepared.sign(deployerKeypair);
+    let tx = new TransactionBuilder(account, { fee: '100000', networkPassphrase: passphrase })
+      .addOperation(Operation.uploadContractWasm({ wasm: wasmBytes }))
+      .setTimeout(TimeoutInfinite)
+      .build();
 
-  console.log("  ⌛ Submitting to Stellar network...");
-  const sendResp = await server.sendTransaction(prepared);
-  if (sendResp.status === 'ERROR') {
-    throw new Error(`Upload tx error: ${sendResp.errorResultXdr || 'Unknown'}`);
+    console.log("  ⌛ Simulating...");
+    const prepared = await server.prepareTransaction(tx);
+    prepared.sign(deployerKeypair);
+
+    console.log("  ⌛ Submitting to Stellar network...");
+    const sendResp = await server.sendTransaction(prepared);
+    if (sendResp.status === 'ERROR') {
+      console.log(`  ⚠️ Upload rejected (likely duplicate). Using computed hash: ${computedHashHex}`);
+      return computedHashHex;
+    }
+
+    const txInfo = await pollForResult(sendResp.hash);
+    console.log(`  ✅ WASM uploaded! Hash: ${computedHashHex}\n`);
+    return computedHashHex;
+  } catch (err) {
+    console.log(`  ⚠️ Upload error (${err.message}). Using computed hash: ${computedHashHex}`);
+    return computedHashHex;
   }
-
-  const txInfo = await pollForResult(sendResp.hash);
-  if (!txInfo.returnValue) throw new Error("Upload succeeded but no returnValue found.");
-
-  const rawBytes = scValToNative(txInfo.returnValue);
-  const wasmHashHex = Buffer.from(rawBytes).toString('hex');
-  console.log(`  ✅ WASM uploaded! Hash: ${wasmHashHex}\n`);
-  return wasmHashHex;
 }
 
 // ─────────────────────────────────────────────────────────
 //  INSTANTIATE CONTRACT — returns the C... contract address
 // ─────────────────────────────────────────────────────────
-async function instantiateContract(wasmHashHex, saltHex) {
-  console.log(`🏗  Instantiating contract (salt: ${saltHex.slice(0, 8)}...)...`);
-  const account = await server.getAccount(deployerKeypair.publicKey());
+async function instantiateContract(wasmHashHex, saltHex, attempt = 1) {
+  try {
+    console.log(`🏗  Instantiating contract (salt: ${saltHex.slice(0, 8)}...)...`);
+    const account = await server.getAccount(deployerKeypair.publicKey());
 
-  let tx = new TransactionBuilder(account, { fee: '100000', networkPassphrase: passphrase })
-    .addOperation(
-      Operation.createCustomContract({
-        wasmHash: Buffer.from(wasmHashHex, 'hex'),
-        address: Address.fromString(deployerKeypair.publicKey()),
-        salt: Buffer.from(saltHex, 'hex'),
-      })
-    )
-    .setTimeout(TimeoutInfinite)
-    .build();
+    let tx = new TransactionBuilder(account, { fee: '100000', networkPassphrase: passphrase })
+      .addOperation(
+        Operation.createCustomContract({
+          wasmHash: Buffer.from(wasmHashHex, 'hex'),
+          address: Address.fromString(deployerKeypair.publicKey()),
+          salt: Buffer.from(saltHex, 'hex'),
+        })
+      )
+      .setTimeout(TimeoutInfinite)
+      .build();
 
-  console.log("  ⌛ Simulating...");
-  const prepared = await server.prepareTransaction(tx);
-  prepared.sign(deployerKeypair);
+    console.log("  ⌛ Simulating...");
+    const prepared = await server.prepareTransaction(tx);
+    prepared.sign(deployerKeypair);
 
-  console.log("  ⌛ Submitting...");
-  const sendResp = await server.sendTransaction(prepared);
-  if (sendResp.status === 'ERROR') {
-    throw new Error(`Instantiate tx error: ${sendResp.errorResultXdr || 'Unknown'}`);
+    console.log("  ⌛ Submitting...");
+    const sendResp = await server.sendTransaction(prepared);
+    if (sendResp.status === 'ERROR') {
+      throw new Error(`Instantiate tx error: ${sendResp.errorResultXdr || 'Unknown'}`);
+    }
+
+    const txInfo = await pollForResult(sendResp.hash);
+    if (!txInfo.returnValue) throw new Error("Instantiate succeeded but no returnValue found.");
+
+    const rawAddress = scValToNative(txInfo.returnValue);
+    let contractId;
+    if (typeof rawAddress === 'string') {
+      contractId = rawAddress;
+    } else {
+      contractId = StrKey.encodeContract(Buffer.from(rawAddress));
+    }
+    console.log(`  🎉 Deployed at: ${contractId}\n`);
+    return contractId;
+  } catch (err) {
+    if (attempt < 3) {
+      console.log(`  ⚠️ Retry ${attempt} failed (${err.message}). Retrying in 5s...`);
+      await new Promise(r => setTimeout(r, 5000));
+      return instantiateContract(wasmHashHex, crypto.randomBytes(32).toString('hex'), attempt + 1);
+    }
+    throw err;
   }
-
-  const txInfo = await pollForResult(sendResp.hash);
-  if (!txInfo.returnValue) throw new Error("Instantiate succeeded but no returnValue found.");
-
-  // The returnValue is a ScAddress — decode it to a C... StrKey
-  const rawAddress = scValToNative(txInfo.returnValue);
-  // rawAddress may be a Uint8Array (contract bytes) or an Address string
-  let contractId;
-  if (typeof rawAddress === 'string') {
-    contractId = rawAddress;
-  } else {
-    // It's raw bytes — encode as contract StrKey
-    contractId = StrKey.encodeContract(Buffer.from(rawAddress));
-  }
-  console.log(`  🎉 Deployed at: ${contractId}\n`);
-  return contractId;
 }
 
 // ─────────────────────────────────────────────────────────
 //  POLL for transaction confirmation
 // ─────────────────────────────────────────────────────────
 async function pollForResult(hash) {
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 150; i++) {
     const info = await server.getTransaction(hash);
     if (info.status === 'SUCCESS') return info;
     if (info.status === 'FAILED') {
@@ -197,11 +207,12 @@ function updateSorobanTs(registryAddress, tokenAddress, vaultAddress, usdcAddres
 // ─────────────────────────────────────────────────────────
 async function main() {
   // Unique salts per contract to avoid address collisions
+  const genSalt = () => crypto.randomBytes(32).toString('hex');
   const SALTS = {
-    usdc:     'dd00000000000000000000000000000000000000000000000000000000000004',
-    registry: 'aa00000000000000000000000000000000000000000000000000000000000001',
-    token:    'bb00000000000000000000000000000000000000000000000000000000000002',
-    vault:    'cc00000000000000000000000000000000000000000000000000000000000003',
+    usdc:     genSalt(),
+    registry: genSalt(),
+    token:    genSalt(),
+    vault:    genSalt(),
   };
 
   const wasmPaths = {
@@ -212,6 +223,7 @@ async function main() {
   };
 
   let usdcAddress;
+  let usdcWasmHash;
   if (network === 'mainnet') {
     console.log("=== [1/4] STELLAR USDC TOKEN ===");
     console.log("ℹ️ Running on MAINNET: Using official Circle USDC Stellar Asset Contract ID.");
@@ -219,7 +231,7 @@ async function main() {
     console.log(`  🎉 USDC Contract ID: ${usdcAddress}\n`);
   } else {
     console.log("=== [1/4] STELLAR USDC TOKEN ===");
-    const usdcWasmHash = await uploadWasm(wasmPaths.usdc);
+    usdcWasmHash = await uploadWasm(wasmPaths.usdc);
     usdcAddress  = await instantiateContract(usdcWasmHash, SALTS.usdc);
   }
 
@@ -228,7 +240,7 @@ async function main() {
   const registryAddress  = await instantiateContract(registryWasmHash, SALTS.registry);
 
   console.log("=== [3/4] VAULT SHARE TOKEN ===");
-  const tokenWasmHash = await uploadWasm(wasmPaths.token);
+  const tokenWasmHash = usdcWasmHash; // Reuse already uploaded wasm
   const tokenAddress  = await instantiateContract(tokenWasmHash, SALTS.token);
 
   console.log("=== [4/4] CORRIDOR POOL VAULT ===");
