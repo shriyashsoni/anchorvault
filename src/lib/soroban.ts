@@ -416,9 +416,14 @@ export async function buildDepositTransaction(
   const simResult = await sorobanServer.simulateTransaction(tx);
   
   if (!rpc.Api.isSimulationSuccess(simResult)) {
-    const errMsg = rpc.Api.isSimulationError(simResult)
+    let errMsg = rpc.Api.isSimulationError(simResult)
       ? simResult.error
       : "Transaction simulation failed";
+      
+    if (typeof errMsg === 'string' && (errMsg.includes("resulting balance is not within the allowed range") || errMsg.includes("Error(Contract, #10)"))) {
+      errMsg = "Insufficient Balance. You do not have enough USDC to complete this deposit.";
+    }
+    
     throw new Error(errMsg);
   }
 
@@ -454,9 +459,13 @@ export async function buildWithdrawTransaction(
 
   const simResult = await sorobanServer.simulateTransaction(tx);
   if (!rpc.Api.isSimulationSuccess(simResult)) {
-    throw new Error(
-      rpc.Api.isSimulationError(simResult) ? simResult.error : "Withdraw simulation failed"
-    );
+    let errMsg = rpc.Api.isSimulationError(simResult) ? simResult.error : "Withdraw simulation failed";
+    
+    if (typeof errMsg === 'string' && (errMsg.includes("resulting balance is not within the allowed range") || errMsg.includes("Error(Contract, #10)"))) {
+      errMsg = "Insufficient Balance. You do not have enough shares to withdraw this amount.";
+    }
+    
+    throw new Error(errMsg);
   }
 
   const preparedTx = rpc.assembleTransaction(tx, simResult).build();
