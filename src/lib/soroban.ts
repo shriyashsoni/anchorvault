@@ -1053,7 +1053,7 @@ export async function buildRepayLiquidityTransaction(
  * (Administrative Governance Action - Signed & submitted directly via Deployer Authority)
  */
 export async function offsetDefaultedDebtOnChain(anchorAddress: string): Promise<string> {
-  const deployerKeypair = Keypair.fromSecret(process.env.DEPLOYER_SECRET || "SD2..." /* fallback standard */);
+  const deployerKeypair = Keypair.fromSecret(DEPLOYER_SECRET);
   const deployerAddress = deployerKeypair.publicKey();
 
   const contract = new Contract(CONTRACT_ADDRESSES.CORE_VAULT);
