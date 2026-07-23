@@ -1197,6 +1197,14 @@ export default function App() {
 
           {/* Action Buttons (Right, Desktop Only) */}
           <div className="hidden lg:flex items-center gap-4">
+            <a 
+              href="https://app.virtuals.io/virtuals/121062"
+              target="_blank"
+              rel="noreferrer"
+              className="border border-[#7b39fc] rounded-[8px] text-[#fafafa] font-semibold text-sm px-5 py-2.5 hover:bg-[#7b39fc]/20 transition-all font-manrope flex items-center gap-2"
+            >
+              Trade $VAULT <ExternalLink className="h-4 w-4" />
+            </a>
             <button 
               onClick={walletConnected ? () => { setShowDashboard(true); setDashboardTab("overview"); } : handleConnectWallet}
               className="bg-[#7b39fc] rounded-[8px] text-[#fafafa] font-semibold text-sm px-5 py-2.5 hover:bg-[#8b4eff] transition-all shadow-md shadow-[#7b39fc]/20 font-manrope"
@@ -1239,6 +1247,14 @@ export default function App() {
             <button onClick={() => { setMobileMenuOpen(false); setCurrentView("docs"); }} className="text-2xl text-white font-medium hover:opacity-80 cursor-pointer">Contracts</button>
             
             <div className="flex flex-col gap-4 w-full max-w-xs mt-8">
+              <a 
+                href="https://app.virtuals.io/virtuals/121062"
+                target="_blank"
+                rel="noreferrer"
+                className="border border-[#7b39fc] rounded-[8px] text-[#fafafa] font-semibold text-base py-3 hover:bg-[#7b39fc]/20 w-full flex items-center justify-center gap-2"
+              >
+                Trade $VAULT <ExternalLink className="h-4 w-4" />
+              </a>
               <button 
                 onClick={() => { setMobileMenuOpen(false); if (walletConnected) { setShowDashboard(true); setDashboardTab("overview"); } else { handleConnectWallet(); } }}
                 className="bg-[#7b39fc] rounded-[8px] text-[#fafafa] font-semibold text-base py-3 hover:bg-[#8b4eff] w-full shadow-lg shadow-[#7b39fc]/20"
