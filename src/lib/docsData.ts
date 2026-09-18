@@ -438,8 +438,7 @@ export const DOCS_PAGES: DocPage[] = [
           title: "Contract Interfaces",
           cards: [
             { title: "Corridor Pool Vault", desc: "Coordinates USDC deposits, draws, repayments, utilization calculations, and yield distributions.", icon: "building-columns", link: "contracts/corridor-vault" },
-            { title: "Anchor Registry", desc: "Whitelists anchors, locks AVLT collateral stakes, and calculates active reputation scores.", icon: "shield", link: "contracts/anchor-registry" },
-            { title: "Vault Token ($AVLT)", desc: "Soroban-compatible token contract representing fractional pool shares minted to LPs.", icon: "coins", link: "contracts/vault-token" }
+            { title: "Anchor Registry", desc: "Whitelists anchors, locks AVLT collateral stakes, and calculates active reputation scores.", icon: "shield", link: "contracts/anchor-registry" }
           ]
         }
       ]
